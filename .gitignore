@@ -1,0 +1,16 @@
+# 构建与发布产物（源码之外，不纳入版本库）
+out/
+out-*/
+dist/
+
+# 临时截图与日志
+shots/
+shots-*/
+*.log
+*.tmp
+
+# 编辑器与系统杂项
+.vs/
+*.user
+Thumbs.db
+desktop.ini
