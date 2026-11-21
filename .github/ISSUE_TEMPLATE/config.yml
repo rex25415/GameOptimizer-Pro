@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "📦 下载最新版本 / Latest Releases"
+    url: https://github.com/rex25415/GameOptimizer-Pro/releases
+    about: "下载最新可执行程序、便携包与 SHA256 校验文件 / Download the latest single-file EXE, portable ZIP, and SHA-256 checksums."
+  - name: "📖 中文说明文档 / Chinese README"
+    url: https://github.com/rex25415/GameOptimizer-Pro/blob/main/README.md
+    about: "查看功能说明、零依赖源码编译步骤、快捷键与诚实边界声明。"
+  - name: "📖 English Documentation"
+    url: https://github.com/rex25415/GameOptimizer-Pro/blob/main/README.en.md
+    about: "Read features, zero-dependency build instructions, shortcuts, and design boundaries in English."

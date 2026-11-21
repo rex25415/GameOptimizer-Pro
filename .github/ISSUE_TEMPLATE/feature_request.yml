@@ -1,0 +1,55 @@
+name: "功能建议 / Feature Request"
+description: "提出新调优项、硬件适配、界面交互或功能改进建议 / Suggest a new tuning item, hardware support, UX polish, or enhancement"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提出改进建议！GameOptimizer Pro 坚持以下核心原则：
+        - **零外部依赖 · 纯用户态 Win32**（不注入游戏进程、不加载内核驱动、不碰反作弊）
+        - **可测量 · 写前账本逐项可还原**（不做黑箱或不可逆修改）
+
+        Feature ideas are very welcome! Please keep in mind our core principles: zero external dependencies, pure user-mode Win32 (no game injection or kernel drivers), measurable impact, and 100% reversible changes.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: "建议分类 / Category"
+      options:
+        - "系统调优项 / System Tuning Item"
+        - "硬件与多屏适配 / Hardware & Multi-Monitor Support"
+        - "游戏档案与自动守护 / Game Profiles & AutoPilot Daemon"
+        - "实时遥测与基准测试 / Telemetry & Benchmark"
+        - "界面布局与交互体验 / UI & UX"
+        - "安装部署与文档 / Build, Deploy & Docs"
+        - "其他 / Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "使用场景与痛点 / Use Case & Problem"
+      description: "这项功能想解决什么实际问题？在什么硬件或游戏场景下会用到？"
+      placeholder: "例如：在使用某款多 CCD 处理器或双显卡笔记本时，希望自动识别并..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "期望方案 / Proposed Solution"
+      description: "你希望在界面或行为上如何实现它？"
+      placeholder: "例如：在 08 战术档案增加某个策略选项，退出游戏后自动按账本还原..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: "参考资料、Win32 API / 注册表路径或实测数据（可选）/ References or Benchmarks (Optional)"
+      description: "如果涉及具体系统参数、微软官方文档链接或前后延迟对比，欢迎一并附上"
+      placeholder: "例如：微软文档链接、注册表路径或测试截图..."
+    validations:
+      required: false

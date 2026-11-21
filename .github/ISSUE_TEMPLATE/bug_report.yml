@@ -1,0 +1,115 @@
+name: "Bug 反馈 / Bug Report"
+description: "报告崩溃、硬件识别异常、调优/还原失败或界面问题 / Report crashes, hardware detection issues, tuning/restore failures, or UI bugs"
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提交 Bug 反馈！请尽量提供系统版本、硬件型号与复现步骤，以便快速定位问题。
+        Thanks for reporting a bug! Please include your OS, hardware specs, and repro steps to help us diagnose it quickly.
+
+        > 提示：应用审计日志位于 `%LOCALAPPDATA%\GameOptimizer\ledger\audit-YYYYMM.log`，也可在软件 **11 审计日志** 页直接导出诊断信息。
+
+  - type: input
+    id: version
+    attributes:
+      label: "软件版本 / App Version"
+      description: "请填写版本号或发布标签（可在主界面底栏或文件属性中查看）"
+      placeholder: "例如：v1.40.0 (Rev 140)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: "Windows 版本 / Windows Version"
+      description: "可通过运行 winver 查看具体版本号"
+      options:
+        - "Windows 11 24H2 (x64)"
+        - "Windows 11 23H2 或更早 / 23H2 or earlier (x64)"
+        - "Windows 10 22H2 (x64)"
+        - "其他 / Other (请在下方问题描述中补充)"
+    validations:
+      required: true
+
+  - type: input
+    id: hardware
+    attributes:
+      label: "硬件环境 / Hardware Specs"
+      description: "CPU、显卡（含核显/独显双卡）、内存、显示器数量与刷新率、台式机/笔记本"
+      placeholder: "例如：Ryzen 9 7950X3D / RTX 4080 / 32GB / 双屏 240Hz + 60Hz / 台式机"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: "涉及模块 / Affected Module"
+      options:
+        - "启动 / 编译 / 安装部署 (Startup / Build / Deploy)"
+        - "01 态势总览 (Situation Overview)"
+        - "02 调优矩阵与战术检视台 (Tuning Matrix & Inspector)"
+        - "03 调度与定时器 (Scheduler & Silicon Topology)"
+        - "04 内存与提交 (Memory & Commit)"
+        - "05 图形栈与多屏画布 (Graphics & Multi-Monitor)"
+        - "06 网络与吞吐 (Network & Telemetry)"
+        - "07 进程与优先级 (Processes & Priority)"
+        - "08 战术档案与自动守护 (Profiles & AutoPilot Daemon)"
+        - "09 基准测试 (Benchmark)"
+        - "10 还原中心与写前账本 (Restore Center & Ledger)"
+        - "11 审计日志 (Audit Log)"
+        - "其他 / Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: privileges
+    attributes:
+      label: "运行权限 / Privilege Mode"
+      options:
+        - "普通用户权限 / Standard User"
+        - "管理员权限 / Administrator"
+        - "不确定 / Not sure"
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "问题描述与复现步骤 / Description & Steps to Reproduce"
+      description: "请清楚描述发生了什么问题，以及如何一步步复现（可直接拖入截图）"
+      placeholder: |
+        1. 打开页面：...
+        2. 点击操作：...
+        3. 实际现象：...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "预期行为 / Expected Behavior"
+      description: "你期望软件正常情况下应该怎么表现？"
+      placeholder: "例如：应用后应回读校验通过，且重启后保持生效"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "相关日志或自检输出（可选）/ Logs or --selftest Output (Optional)"
+      description: "可粘贴 audit-YYYYMM.log 关键片段，或运行 GameOptimizer.exe --selftest selftest.txt 后的结果"
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "提交前确认 / Pre-submission Checklist"
+      options:
+        - label: "我已确认使用的是最新版本，或已在上方注明实际版本 / I tested on the latest release (or stated my version above)"
+          required: false
+        - label: "我已确认所贴日志与截图不包含个人隐私或敏感路径 / I removed sensitive personal info from logs and screenshots"
+          required: true
