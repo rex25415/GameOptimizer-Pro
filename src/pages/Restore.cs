@@ -256,6 +256,14 @@ namespace Go.Pages
             right.Orientation = Orientation.Horizontal;
             right.VerticalAlignment = VerticalAlignment.Bottom;
 
+            Btn setupBtn = new Btn("\u5B89\u88C5 / \u5378\u8F7D", BtnKind.Ghost);
+            setupBtn.Height = T.BtnHLg;
+            setupBtn.Margin = new Thickness(0, 0, 8, 0);
+            setupBtn.VerticalAlignment = VerticalAlignment.Bottom;
+            setupBtn.Click += delegate { if (c != null && c.Shell != null) c.Shell.OpenSetupDialog(false); };
+            Tip.Attach(setupBtn, "\u7BA1\u7406\u672C\u673A\u5B89\u88C5\u3001\u81EA\u9009\u684C\u9762/\u5F00\u59CB\u83DC\u5355\u5FEB\u6377\u65B9\u5F0F\uFF0C\u6216\u5378\u8F7D\u672C\u8F6F\u4EF6");
+            right.Children.Add(setupBtn);
+
             Btn acceptAll = new Btn("\u5168\u90E8\u4FDD\u7559", BtnKind.Ghost);
             acceptAll.Height = T.BtnHLg;
             acceptAll.Margin = new Thickness(0, 0, 8, 0);

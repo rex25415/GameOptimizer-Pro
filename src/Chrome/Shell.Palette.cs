@@ -482,11 +482,16 @@ namespace Go
             r.Add(elev);
 
             AppInstall.InstallStatus ist = GetInstallStatus();
-            bool instOk = ist != null && ist.FullyInstalled;
+            bool instOk = ist != null && ist.IsInstalled;
             AddShortcut(r,
-                instOk ? "刷新桌面与开始菜单快捷方式" : "安装到本机并创建桌面快捷方式",
-                instOk ? ("已安装于 " + ist.InstallDir + " · 重新对齐快捷方式") : "复制主程序至固定目录 · 创建桌面与开始菜单图标 · 注册系统卸载项",
-                Glyph.Download, "SYSTEM", delegate { InstallToDesktopFromUi(); });
+                instOk ? "应用安装与快捷方式管理" : "安装到本机并自选快捷方式",
+                instOk ? ("已安装于 " + ist.InstallDir + " · 自由开关桌面/开始菜单快捷方式") : "自选创建桌面快捷方式、开始菜单入口或开机托盘自启",
+                Glyph.Download, "SYSTEM", delegate { OpenSetupDialog(false); });
+
+            AddShortcut(r,
+                "卸载 GameOptimizer Pro",
+                "检查写前账本未还原项，清理快捷方式、注册项与安装目录（原生内置）",
+                Glyph.Restore, "SYSTEM", delegate { OpenSetupDialog(true); });
 
             string openDir = (ist != null && ist.InstalledBinaryExists) ? ist.InstallDir : AppDomain.CurrentDomain.BaseDirectory;
             AddShortcut(r, "打开程序安装目录", openDir, Glyph.Log, "FILE", delegate

@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Windows 10 / 11 零依赖单文件游戏性能控制台 · 写前原子账本 · 逐项可还原 · 原生 Win32 实时遥测</strong><br/>
-  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 141)</em>
+  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 142)</em>
 </p>
 
 <p align="center">
@@ -18,24 +18,24 @@
   </a>
   <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-3b82f6?style=flat-square" alt="Platform"/>
   <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-14b8a6?style=flat-square" alt="Zero Dependencies"/>
-  <img src="https://img.shields.io/badge/Binary-~1.26%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
+  <img src="https://img.shields.io/badge/Binary-~1.28%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-win-x64.exe">
-    <img src="https://img.shields.io/badge/Download%20EXE-v1.41.0%20%C2%B7%201.26%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.42.0/GameOptimizer-Pro-v1.42.0-win-x64.exe">
+    <img src="https://img.shields.io/badge/Download%20EXE-v1.42.0%20%C2%B7%201.28%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
   </a>
   &nbsp;
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
-    <img src="https://img.shields.io/badge/Releases-Portable%20ZIP%20%26%20SHA256-0ea5e9?style=for-the-badge" alt="All Release Assets"/>
+    <img src="https://img.shields.io/badge/Releases-Notes%20%26%20SHA256-0ea5e9?style=for-the-badge" alt="Release Notes & SHA256"/>
   </a>
 </p>
 
 <p align="center">
-  <sub><strong>普通玩家直接点击上方绿色按钮下载 <code>.exe</code>，双击即可运行，程序内支持一键创建桌面与开始菜单快捷方式（无需点右上角绿色 <code>Code</code> 下载源码）</strong></sub>
+  <sub><strong>只有一个单文件 <code>.exe</code>，不分版本、无需解压——双击即可运行，程序内置「安装/卸载」窗口可自由勾选桌面/开始菜单快捷方式与一键卸载（无需点右上角 <code>Code</code> 下载源码）</strong></sub>
 </p>
 
 <p align="center">
@@ -115,34 +115,31 @@
 ## 下载与上手
 
 ### 3 步极速上手
-1. **下载运行**：下载单文件 `.exe` 后直接双击即可运行（默认**普通用户权限**，零写入立即可看硬件体检、四维健康评分与负优化残留扫描）。
-2. **一键固定到桌面（可选）**：首次从下载目录打开时，顶部会温和提示**「安装并建桌面图标」**，点一下自动安放至固定目录并建好桌面快捷方式、开始菜单搜索入口与系统卸载项（以后清理下载目录也不会找不到）；若习惯纯绿色运行，点「保持便携」即不再提醒。
-3. **按需调优与随时还原**：写入 `HKLM` / 电源方案 / 服务时按需点击「提权重启」，每项改动前自动记录原值至写前账本，随时可在 `10 还原中心` 逐条或一键全部无损恢复。
+1. **下载双击即用**：只下载唯一的单文件 `.exe`，双击即可在**普通用户权限**下查看硬件拓扑、四维体检与负优化残留扫描（零写入）。
+2. **自由勾选快捷方式（全部由你决定）**：通过顶部轻提示、左下角 `安装/卸载`、`10 还原中心` 或 `Ctrl+K` 打开内置深色「应用安装与管理」窗口，按个人喜好自由勾选**桌面快捷方式**、**开始菜单入口**、**开机静默进托盘**（勾上即创建，取消即移除，绝不强塞）。
+3. **随时无损还原或内置卸载**：调优前自动记录原值至写前账本，可逐条或一键全部还原；若要卸载，直接在软件内（或 Windows「设置 → 已安装的应用」）点击卸载，自动检查未还原项并在退出后干净清空目录，零残留、无黑框。
 
-### 方式一：直接下载成品（推荐普通玩家）
+### 直接下载（唯一成品文件）
 
-| 发行文件 | 适用场景 | 快捷入口 |
+| 发行文件 | 说明 | 快捷入口 |
 |---|---|---|
-| **`GameOptimizer-Pro-v1.41.0-win-x64.exe`** | 免安装绿色单文件（`~1.26 MB`），下载双击即可运行，支持程序内一键建桌面与开始菜单图标 | [**直接下载 EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-win-x64.exe) |
-| **`GameOptimizer-Pro-v1.41.0-portable.zip`** | 完整便携压缩包，附带双击即可运行的 **`Install-GameOptimizer.bat`**（一键安装建桌面图标）与 **`Uninstall-GameOptimizer.bat`** | [**直接下载 ZIP**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-portable.zip) |
+| **`GameOptimizer-Pro-v1.42.0-win-x64.exe`** | 唯一单文件程序（`~1.28 MB`），双击即可运行，内置自选快捷方式安装与原生卸载 | [**直接下载 EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.42.0/GameOptimizer-Pro-v1.42.0-win-x64.exe) |
 | **`SHA256SUMS.txt`** | 发行包 SHA-256 哈希校验清单 | [**查看 Releases**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest) |
 
 > **如何核对文件哈希（PowerShell）**：
 > ```powershell
-> Get-FileHash .\GameOptimizer-Pro-v1.41.0-win-x64.exe -Algorithm SHA256
+> Get-FileHash .\GameOptimizer-Pro-v1.42.0-win-x64.exe -Algorithm SHA256
 > ```
 
-### 方式二：零依赖从源码编译（开发者自选是否创建快捷方式）
+### 从源码 0.7 秒自编译（可选）
 
-无需安装 Visual Studio 或 .NET SDK，仅用 Windows 内置的 `.NET Framework 4.8 csc.exe`（程序自动识别源码目录，自编译运行时**不会**弹出安装引导，是否创建桌面快捷方式完全由你决定）：
+全部源码完全公开透明；无需安装 Visual Studio 或 .NET SDK，仅用 Windows 10/11 自带的 `.NET Framework 4.8 csc.exe` 即可原地编译出完全一致的单文件 `.exe`：
 
 ```powershell
 git clone https://github.com/rex25415/GameOptimizer-Pro.git
 cd GameOptimizer-Pro
 .\build.ps1                 # 编译 -> out\GameOptimizer.exe（约 0.7 秒）
-.\build.ps1 -Run            # 编译并直接启动
-.\tools\deploy.ps1          # 安装至 %LOCALAPPDATA%\Programs\GameOptimizer 并创建桌面/开始菜单快捷方式与卸载入口
-.\tools\uninstall.ps1       # 干净卸载（默认保留 ledger 账本，可加 -PurgeUserData 一并清除）
+.\build.ps1 -Run            # 编译并直接启动（安装/快捷方式/卸载均可在软件内随时管理）
 ```
 
 ---

@@ -137,15 +137,14 @@ if (Test-Path $smRoot) {
     }
 }
 
-# ---- 3.5 部署卸载脚本、刷新注册表元数据与清理历史失效项 ----
+# ---- 3.5 清理旧外部卸载脚本、刷新注册表元数据（直接指向 exe --uninstall）----
 $dstDir = Split-Path -Parent $exe
-$uninstSrc = Join-Path $PSScriptRoot 'uninstall.ps1'
-$uninstDst = Join-Path $dstDir 'Uninstall.ps1'
-if (Test-Path $uninstSrc) { Copy-Item $uninstSrc $uninstDst -Force }
+$oldUninst = Join-Path $dstDir 'Uninstall.ps1'
+if (Test-Path $oldUninst) { Remove-Item $oldUninst -Force -ErrorAction SilentlyContinue }
 
 try {
     $fvi = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($exe)
-    $dispVer = if ([string]::IsNullOrWhiteSpace($fvi.ProductVersion)) { '90.0.2026.1118' } else { $fvi.ProductVersion }
+    $dispVer = if ([string]::IsNullOrWhiteSpace($fvi.FileVersion)) { '142.0.2026.1121' } else { $fvi.FileVersion }
     $kb = [int][Math]::Ceiling(((Get-ChildItem $dstDir -File -ErrorAction SilentlyContinue | Measure-Object Length -Sum).Sum) / 1KB)
     $uKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\GameOptimizerPro'
     New-Item -Path $uKey -Force | Out-Null
@@ -154,11 +153,12 @@ try {
     Set-ItemProperty -Path $uKey -Name 'Publisher' -Value 'GameOptimizer Studio'
     Set-ItemProperty -Path $uKey -Name 'InstallLocation' -Value $dstDir
     Set-ItemProperty -Path $uKey -Name 'DisplayIcon' -Value $exe
-    Set-ItemProperty -Path $uKey -Name 'UninstallString' -Value ("powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"" + $uninstDst + "`"")
+    Set-ItemProperty -Path $uKey -Name 'UninstallString' -Value ('"' + $exe + '" --uninstall')
+    Set-ItemProperty -Path $uKey -Name 'QuietUninstallString' -Value ('"' + $exe + '" --uninstall --silent')
     Set-ItemProperty -Path $uKey -Name 'EstimatedSize' -Value $kb -Type DWord
     Set-ItemProperty -Path $uKey -Name 'NoModify' -Value 1 -Type DWord
     Set-ItemProperty -Path $uKey -Name 'NoRepair' -Value 1 -Type DWord
-    Write-Host ('  卸载入口：已注册 ' + $dispVer) -ForegroundColor DarkGray
+    Write-Host ('  卸载入口：已注册内置 --uninstall (' + $dispVer + ')') -ForegroundColor DarkGray
 } catch {
     Write-Host ('  warn    -> uninstall reg: ' + $_.Exception.Message) -ForegroundColor Yellow
 }

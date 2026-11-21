@@ -352,7 +352,7 @@ namespace Go
             _installChip.Cursor = Cursors.Hand;
             _installChip.MouseEnter += delegate { if (_installChip != null) _installChip.Foreground = T.S(T.Accent); };
             _installChip.MouseLeave += delegate { RefreshInstallChipColor(); };
-            Pressable.On(_installChip, delegate { InstallToDesktopFromUi(); });
+            Pressable.On(_installChip, delegate { OpenSetupDialog(false); });
             Grid.SetColumn(_installChip, 1);
             verRow.Children.Add(_installChip);
             RefreshInstallUi();

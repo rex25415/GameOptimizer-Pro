@@ -1,14 +1,13 @@
 // ============================================================================
-//  AppInstall.cs — 本机桌面安装与原生快捷方式管理（Rev 141 · DESKTOP CITIZEN）
+//  AppInstall.cs — 一体化本机安装、用户自选快捷方式与原生自卸载引擎（Rev 142）
 //
-//  目标：让单文件 exe 既保持「下载即用、零强制写入」的克制，又给普通用户提供
-//  一键成为完整桌面软件的能力：
-//    1) 复制当前 exe 至标准每用户目录 %LOCALAPPDATA%\Programs\GameOptimizer\
-//       （后续即使清空浏览器下载目录，桌面与开始菜单图标也永不失效）；
-//    2) 原生 COM IShellLinkW + IPersistFile 创建/去重桌面与开始菜单 .lnk
-//       （零 WSH / 零 PowerShell 黑框闪烁 / 零外部依赖）；
-//    3) 生成标准 Uninstall.ps1 并注册 HKCU 卸载项，在 Windows「已安装的应用」可见；
-//    4) 自动识别源码开发仓（含 build.ps1 + src\App.cs），开发者自编译时零打扰。
+//  核心理念：只有一个单文件 exe，不分裂版本、不附带外置 .bat / Uninstall.ps1 脚本。
+//    1) 安装与快捷方式同步：复制到 %LOCALAPPDATA%\Programs\GameOptimizer\GameOptimizer.exe，
+//       严格按用户勾选创建或移除「桌面快捷方式」「开始菜单入口」「开机静默进托盘」；
+//    2) 原生卸载对接：HKCU\...\Uninstall\GameOptimizerPro 直接指向
+//       "<InstalledExe>" --uninstall（内置深色原生界面，零 PowerShell 黑框）；
+//    3) 干净自清理：卸载时停止其他实例、清除所有快捷方式/自启/卸载项，
+//       若当前正从安装目录运行则从 TEMP 发起隐藏自删命令，退出后 1 秒内彻底清空目录。
 // ============================================================================
 using System;
 using System.Collections.Generic;
@@ -18,6 +17,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
 using Microsoft.Win32;
 
 namespace Go
@@ -26,35 +26,67 @@ namespace Go
     {
         public const string ShortcutFileName = "GameOptimizer Pro.lnk";
         public const string UninstallRegSubKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\GameOptimizerPro";
+        public const string RunRegSubKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        public const string RunValueName = "GameOptimizer";
+
+        public sealed class InstallOptions
+        {
+            public bool CreateDesktopShortcut;
+            public bool CreateStartMenuShortcut;
+            public bool EnableAutostart;
+
+            public static InstallOptions DefaultFor(InstallStatus st)
+            {
+                InstallOptions o = new InstallOptions();
+                if (st != null && st.IsInstalled)
+                {
+                    o.CreateDesktopShortcut = st.HasDesktopShortcut;
+                    o.CreateStartMenuShortcut = st.HasStartMenuShortcut;
+                    o.EnableAutostart = st.HasAutostart;
+                }
+                else
+                {
+                    // 首次安装默认勾选桌面快捷方式；开始菜单与开机自启由用户按需自行勾选，绝不强塞
+                    o.CreateDesktopShortcut = true;
+                    o.CreateStartMenuShortcut = false;
+                    o.EnableAutostart = false;
+                }
+                return o;
+            }
+        }
 
         public sealed class InstallStatus
         {
             public string CurrentExe;
             public string InstallDir;
             public string InstalledExe;
+            public string DataDir;
             public bool RunningFromInstallDir;
             public bool RunningFromSourceTree;
             public bool InstalledBinaryExists;
             public bool HasDesktopShortcut;
             public bool HasStartMenuShortcut;
+            public bool HasAutostart;
+            public bool HasUninstallEntry;
 
-            /// <summary>
-            /// 仅当普通用户从非安装目录且非源码开发仓启动，并且尚未安装或桌面图标缺失时，
-            /// 才展示温和的一次性安装引导带。
-            /// </summary>
+            public bool IsInstalled
+            {
+                get { return InstalledBinaryExists || HasUninstallEntry; }
+            }
+
             public bool NeedsInstallPrompt
             {
                 get
                 {
                     return !RunningFromInstallDir
                         && !RunningFromSourceTree
-                        && (!InstalledBinaryExists || !HasDesktopShortcut);
+                        && !IsInstalled;
                 }
             }
 
             public bool FullyInstalled
             {
-                get { return InstalledBinaryExists && HasDesktopShortcut; }
+                get { return InstalledBinaryExists && (HasDesktopShortcut || HasStartMenuShortcut || HasUninstallEntry); }
             }
         }
 
@@ -62,10 +94,21 @@ namespace Go
         {
             public bool Ok;
             public string InstalledExe;
-            public string DesktopShortcut;
-            public string StartMenuShortcut;
+            public bool DesktopShortcutActive;
+            public bool StartMenuShortcutActive;
+            public bool AutostartActive;
             public bool HotSwapped;
             public bool UninstallRegistered;
+            public string Error;
+        }
+
+        public sealed class UninstallResult
+        {
+            public bool Ok;
+            public int RemovedShortcuts;
+            public bool RemovedInstallDir;
+            public bool DeferredSelfDelete;
+            public bool RemovedUserData;
             public string Error;
         }
 
@@ -115,6 +158,13 @@ namespace Go
                 "Programs", "GameOptimizer");
         }
 
+        public static string DefaultDataDir()
+        {
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "GameOptimizer");
+        }
+
         public static string DefaultDesktopDir()
         {
             return Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
@@ -159,7 +209,6 @@ namespace Go
             return string.Equals(NormPath(a), NormPath(b), StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>检测 exe 是否位于源码开发仓（如 &lt;repo&gt;\out\GameOptimizer.exe）。</summary>
         public static bool IsInSourceTree(string exePath)
         {
             if (string.IsNullOrEmpty(exePath)) return false;
@@ -182,14 +231,20 @@ namespace Go
 
         public static InstallStatus Probe()
         {
-            return Probe(CurrentExePath(), DefaultInstallDir(), DefaultDesktopDir(), DefaultStartMenuProgramsDir());
+            return Probe(CurrentExePath(), DefaultInstallDir(), DefaultDataDir(), DefaultDesktopDir(), DefaultStartMenuProgramsDir(), true);
         }
 
         public static InstallStatus Probe(string currentExe, string installDir, string desktopDir, string startMenuDir)
         {
+            return Probe(currentExe, installDir, DefaultDataDir(), desktopDir, startMenuDir, false);
+        }
+
+        public static InstallStatus Probe(string currentExe, string installDir, string dataDir, string desktopDir, string startMenuDir, bool readRegistry)
+        {
             InstallStatus st = new InstallStatus();
             st.CurrentExe = NormPath(currentExe);
             st.InstallDir = NormPath(installDir);
+            st.DataDir = NormPath(dataDir);
             st.InstalledExe = string.IsNullOrEmpty(st.InstallDir) ? "" : Path.Combine(st.InstallDir, "GameOptimizer.exe");
 
             string curDir = "";
@@ -203,7 +258,39 @@ namespace Go
                 || (!string.IsNullOrEmpty(st.CurrentExe) && HasShortcutTargeting(desktopDir, st.CurrentExe));
             st.HasStartMenuShortcut = HasShortcutTargeting(startMenuDir, st.InstalledExe)
                 || (!string.IsNullOrEmpty(st.CurrentExe) && HasShortcutTargeting(startMenuDir, st.CurrentExe));
+
+            if (readRegistry)
+            {
+                st.HasAutostart = HasRunEntry();
+                st.HasUninstallEntry = HasUninstallRegistry();
+            }
             return st;
+        }
+
+        private static bool HasRunEntry()
+        {
+            try
+            {
+                using (RegistryKey k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RunRegSubKey, false))
+                {
+                    if (k == null) return false;
+                    object v = k.GetValue(RunValueName);
+                    return v != null && !string.IsNullOrEmpty(v.ToString());
+                }
+            }
+            catch { return false; }
+        }
+
+        private static bool HasUninstallRegistry()
+        {
+            try
+            {
+                using (RegistryKey k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(UninstallRegSubKey, false))
+                {
+                    return k != null;
+                }
+            }
+            catch { return false; }
         }
 
         private static bool HasShortcutTargeting(string folder, string targetExe)
@@ -215,7 +302,6 @@ namespace Go
                 string canonical = Path.Combine(folder, ShortcutFileName);
                 if (File.Exists(canonical) && PathEquals(ReadShortcutTarget(canonical), targetExe))
                     return true;
-                // 冷启动探针仅检视名称含 GameOptimizer 的快捷方式，避免对桌面几十个无关 .lnk 激活 COM（可将冷启动开销从 ~130ms 压至 <2ms）
                 string[] files = Directory.GetFiles(folder, "*GameOptimizer*.lnk", SearchOption.TopDirectoryOnly);
                 for (int i = 0; i < files.Length; i++)
                 {
@@ -292,22 +378,24 @@ namespace Go
             }
         }
 
-        // ---- 一键安装与快捷方式收敛 -----------------------------------------
+        // ---- 一体化安装与按勾选同步快捷方式 ----------------------------------
 
-        public static InstallResult InstallSelf(Ledger auditLedger)
+        public static InstallResult ApplyInstall(InstallOptions opt, Ledger auditLedger)
         {
-            return InstallSelf(CurrentExePath(), DefaultInstallDir(), DefaultDesktopDir(), DefaultStartMenuProgramsDir(), true, auditLedger);
+            return ApplyInstall(CurrentExePath(), DefaultInstallDir(), DefaultDesktopDir(), DefaultStartMenuProgramsDir(), opt, true, auditLedger);
         }
 
-        public static InstallResult InstallSelf(
+        public static InstallResult ApplyInstall(
             string sourceExe,
             string installDir,
             string desktopDir,
             string startMenuDir,
-            bool registerUninstall,
+            InstallOptions opt,
+            bool touchRegistry,
             Ledger auditLedger)
         {
             InstallResult res = new InstallResult();
+            if (opt == null) opt = new InstallOptions { CreateDesktopShortcut = true };
             try
             {
                 if (string.IsNullOrEmpty(sourceExe) || !File.Exists(sourceExe))
@@ -325,10 +413,9 @@ namespace Go
                 string targetExe = Path.Combine(installDir, "GameOptimizer.exe");
                 res.InstalledExe = targetExe;
 
-                // 清理旧热替换残留
-                CleanStalePrev(installDir);
+                CleanStaleFiles(installDir);
 
-                // 1) 复制主程序到固定目录（正在运行的旧实例采用 Windows 原子重命名热替换）
+                // 1) 复制主程序到固定目录（支持旧实例 Windows 原子重命名热替换）
                 if (!PathEquals(sourceExe, targetExe))
                 {
                     try
@@ -351,34 +438,44 @@ namespace Go
                     }
                 }
 
-                // 2) 落盘标准卸载脚本（保证独立单文件 exe 安装后也可从 Windows「已安装的应用」干净卸载）
-                string uninstPath = Path.Combine(installDir, "Uninstall.ps1");
-                WriteUninstallScript(uninstPath);
-
-                // 3) 创建并去重桌面快捷方式
+                // 2) 桌面快捷方式：勾了就建并去重，取消勾选就干净移除
                 if (!string.IsNullOrEmpty(desktopDir))
                 {
-                    res.DesktopShortcut = EnsureCanonicalShortcut(desktopDir, targetExe, installDir);
-                    if (string.IsNullOrEmpty(res.DesktopShortcut))
+                    if (opt.CreateDesktopShortcut)
                     {
-                        res.Error = "创建桌面快捷方式失败";
-                        return res;
+                        string p = EnsureCanonicalShortcut(desktopDir, targetExe, installDir);
+                        if (string.IsNullOrEmpty(p)) { res.Error = "创建桌面快捷方式失败"; return res; }
+                        res.DesktopShortcutActive = true;
+                    }
+                    else
+                    {
+                        RemoveShortcutsTargeting(desktopDir, targetExe);
+                        res.DesktopShortcutActive = false;
                     }
                 }
 
-                // 4) 创建并去重开始菜单快捷方式
+                // 3) 开始菜单入口：完全由用户勾选决定
                 if (!string.IsNullOrEmpty(startMenuDir))
                 {
-                    res.StartMenuShortcut = EnsureCanonicalShortcut(startMenuDir, targetExe, installDir);
+                    if (opt.CreateStartMenuShortcut)
+                    {
+                        string p = EnsureCanonicalShortcut(startMenuDir, targetExe, installDir);
+                        res.StartMenuShortcutActive = !string.IsNullOrEmpty(p);
+                    }
+                    else
+                    {
+                        RemoveShortcutsTargeting(startMenuDir, targetExe);
+                        res.StartMenuShortcutActive = false;
+                    }
                 }
 
-                // 5) 注册 HKCU 卸载项
-                if (registerUninstall)
+                // 4) 开机静默进托盘 + Windows「已安装的应用」原生自卸载注册（指向 GameOptimizer.exe --uninstall）
+                if (touchRegistry)
                 {
-                    res.UninstallRegistered = RegisterUninstallEntry(installDir, targetExe, uninstPath);
+                    res.AutostartActive = SetAutostart(targetExe, opt.EnableAutostart);
+                    res.UninstallRegistered = RegisterUninstallEntry(installDir, targetExe);
                 }
 
-                // 6) 通知外壳刷新图标缓存
                 try { SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero); }
                 catch { }
 
@@ -386,10 +483,10 @@ namespace Go
                 {
                     try
                     {
-                        auditLedger.AppendAudit("INSTALL self -> " + targetExe
-                            + " (desktop=" + (!string.IsNullOrEmpty(res.DesktopShortcut))
-                            + ", startmenu=" + (!string.IsNullOrEmpty(res.StartMenuShortcut))
-                            + ", uninstall=" + res.UninstallRegistered + ")");
+                        auditLedger.AppendAudit("INSTALL apply -> " + targetExe
+                            + " (desktop=" + res.DesktopShortcutActive
+                            + ", startmenu=" + res.StartMenuShortcutActive
+                            + ", autostart=" + res.AutostartActive + ")");
                     }
                     catch { }
                 }
@@ -399,10 +496,222 @@ namespace Go
             }
             catch (Exception ex)
             {
-                Diag.Fail("install.self", ex);
+                Diag.Fail("install.apply", ex);
                 res.Error = ex.Message;
                 return res;
             }
+        }
+
+        // ---- 原生一体化自卸载（零外置脚本、零黑框） ----------------------------
+
+        public static UninstallResult UninstallSelf(bool purgeUserData, bool scheduleSelfDelete, Ledger auditLedger)
+        {
+            return UninstallSelf(DefaultInstallDir(), DefaultDataDir(), DefaultDesktopDir(), DefaultStartMenuProgramsDir(),
+                true, purgeUserData, scheduleSelfDelete, auditLedger);
+        }
+
+        public static UninstallResult UninstallSelf(
+            string installDir,
+            string dataDir,
+            string desktopDir,
+            string startMenuDir,
+            bool touchRegistry,
+            bool purgeUserData,
+            bool scheduleSelfDelete,
+            Ledger auditLedger)
+        {
+            UninstallResult res = new UninstallResult();
+            try
+            {
+                string targetExe = string.IsNullOrEmpty(installDir) ? "" : Path.Combine(installDir, "GameOptimizer.exe");
+
+                if (auditLedger != null && !purgeUserData)
+                {
+                    try { auditLedger.AppendAudit("UNINSTALL self -> " + installDir + " (purgeData=" + purgeUserData + ")"); }
+                    catch { }
+                }
+
+                // 1) 停止其它正在运行的 GameOptimizer 实例（保留自身继续完成卸载）
+                if (touchRegistry)
+                {
+                    StopOtherInstances();
+                    SetAutostart(targetExe, false);
+                    DeleteUninstallEntry();
+                    DeleteLegacyScheduledTask();
+                }
+
+                // 2) 清理桌面与开始菜单快捷方式
+                int removed = 0;
+                if (!string.IsNullOrEmpty(desktopDir))
+                    removed += RemoveShortcutsTargeting(desktopDir, targetExe);
+                if (!string.IsNullOrEmpty(startMenuDir))
+                    removed += RemoveShortcutsTargeting(startMenuDir, targetExe);
+                res.RemovedShortcuts = removed;
+
+                try { SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero); }
+                catch { }
+
+                // 3) 可选清除本地配置与写前账本目录
+                bool needDeferredData = false;
+                if (purgeUserData && !string.IsNullOrEmpty(dataDir) && Directory.Exists(dataDir))
+                {
+                    try
+                    {
+                        Directory.Delete(dataDir, true);
+                        res.RemovedUserData = true;
+                    }
+                    catch
+                    {
+                        needDeferredData = true;
+                    }
+                }
+
+                // 4) 删除安装目录；若当前进程自身就位于安装目录内则延后 1 秒隐藏自删
+                bool needDeferredInstall = false;
+                if (!string.IsNullOrEmpty(installDir) && Directory.Exists(installDir))
+                {
+                    bool deletedNow = false;
+                    for (int attempt = 0; attempt < 3; attempt++)
+                    {
+                        try
+                        {
+                            Directory.Delete(installDir, true);
+                            deletedNow = true;
+                            break;
+                        }
+                        catch
+                        {
+                            Thread.Sleep(120);
+                        }
+                    }
+                    if (deletedNow)
+                    {
+                        res.RemovedInstallDir = true;
+                    }
+                    else if (scheduleSelfDelete)
+                    {
+                        needDeferredInstall = true;
+                    }
+                    else
+                    {
+                        res.Error = "安装目录被占用，未能立即删除";
+                        return res;
+                    }
+                }
+
+                if ((needDeferredInstall || needDeferredData) && scheduleSelfDelete)
+                {
+                    ScheduleHiddenCleanup(needDeferredInstall ? installDir : null, needDeferredData ? dataDir : null);
+                    res.DeferredSelfDelete = true;
+                    if (needDeferredData) res.RemovedUserData = true;
+                }
+
+                res.Ok = true;
+                return res;
+            }
+            catch (Exception ex)
+            {
+                Diag.Fail("install.uninstall", ex);
+                res.Error = ex.Message;
+                return res;
+            }
+        }
+
+        private static void StopOtherInstances()
+        {
+            int selfPid = Process.GetCurrentProcess().Id;
+            Process[] list = null;
+            try { list = Process.GetProcessesByName("GameOptimizer"); }
+            catch { return; }
+            if (list == null) return;
+
+            List<Process> others = new List<Process>();
+            for (int i = 0; i < list.Length; i++)
+            {
+                Process p = list[i];
+                try
+                {
+                    if (p.Id == selfPid) { p.Dispose(); continue; }
+                    try { p.CloseMainWindow(); }
+                    catch { }
+                    others.Add(p);
+                }
+                catch { try { p.Dispose(); } catch { } }
+            }
+
+            if (others.Count == 0) return;
+
+            Stopwatch sw = Stopwatch.StartNew();
+            while (sw.ElapsedMilliseconds < 2200)
+            {
+                bool anyAlive = false;
+                for (int i = 0; i < others.Count; i++)
+                {
+                    try { if (!others[i].HasExited) { anyAlive = true; break; } }
+                    catch { }
+                }
+                if (!anyAlive) break;
+                Thread.Sleep(150);
+            }
+
+            for (int i = 0; i < others.Count; i++)
+            {
+                try { if (!others[i].HasExited) others[i].Kill(); }
+                catch { }
+                finally { try { others[i].Dispose(); } catch { } }
+            }
+            Thread.Sleep(200);
+        }
+
+        private static void ScheduleHiddenCleanup(string installDir, string dataDir)
+        {
+            try
+            {
+                // 从 TEMP 启动隐藏 cmd，绝不占用 installDir 句柄，退出后循环重试删除目录
+                StringBuilder cmd = new StringBuilder();
+                cmd.Append("/d /c \"");
+                cmd.Append("for /L %%i in (1,1,8) do (");
+                cmd.Append("ping 127.0.0.1 -n 2 >nul");
+                if (!string.IsNullOrEmpty(installDir))
+                    cmd.Append(" & if exist \"").Append(installDir.Replace("\"", "")).Append("\" rmdir /s /q \"").Append(installDir.Replace("\"", "")).Append("\"");
+                if (!string.IsNullOrEmpty(dataDir))
+                    cmd.Append(" & if exist \"").Append(dataDir.Replace("\"", "")).Append("\" rmdir /s /q \"").Append(dataDir.Replace("\"", "")).Append("\"");
+                cmd.Append(")\"");
+
+                // 注意：cmd /c 直接执行（非批处理文件）循环变量用单 %i
+                string args = cmd.ToString().Replace("%%i", "%i");
+
+                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", args);
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                psi.WindowStyle = ProcessWindowStyle.Hidden;
+                psi.WorkingDirectory = Path.GetTempPath();
+                Process.Start(psi);
+            }
+            catch (Exception ex) { Diag.Fail("install.selfdelete", ex); }
+        }
+
+        private static int RemoveShortcutsTargeting(string folder, string targetExe)
+        {
+            int count = 0;
+            if (string.IsNullOrEmpty(folder) || !Directory.Exists(folder)) return 0;
+            try
+            {
+                string[] existing = Directory.GetFiles(folder, "*.lnk", SearchOption.TopDirectoryOnly);
+                for (int i = 0; i < existing.Length; i++)
+                {
+                    string file = existing[i];
+                    string target = ReadShortcutTarget(file);
+                    bool match = (!string.IsNullOrEmpty(targetExe) && PathEquals(target, targetExe))
+                        || (string.Equals(Path.GetFileName(file), ShortcutFileName, StringComparison.OrdinalIgnoreCase)
+                            && target.IndexOf("GameOptimizer", StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (!match) continue;
+                    try { File.Delete(file); count++; }
+                    catch { }
+                }
+            }
+            catch (Exception ex) { Diag.Fail("install.lnk.remove", ex); }
+            return count;
         }
 
         private static string EnsureCanonicalShortcut(string folder, string targetExe, string workDir)
@@ -462,7 +771,7 @@ namespace Go
             }
         }
 
-        private static void CleanStalePrev(string installDir)
+        private static void CleanStaleFiles(string installDir)
         {
             try
             {
@@ -472,11 +781,41 @@ namespace Go
                     try { File.Delete(prevs[i]); }
                     catch { }
                 }
+                // 清理早期版本的外部 Uninstall.ps1，统一收编进主程序 --uninstall
+                string oldUninst = Path.Combine(installDir, "Uninstall.ps1");
+                if (File.Exists(oldUninst))
+                {
+                    try { File.Delete(oldUninst); }
+                    catch { }
+                }
             }
             catch { }
         }
 
-        private static bool RegisterUninstallEntry(string installDir, string targetExe, string uninstPath)
+        private static bool SetAutostart(string targetExe, bool enable)
+        {
+            try
+            {
+                using (RegistryKey key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(RunRegSubKey))
+                {
+                    if (key == null) return false;
+                    if (enable && !string.IsNullOrEmpty(targetExe))
+                    {
+                        key.SetValue(RunValueName, "\"" + targetExe + "\" --tray", RegistryValueKind.String);
+                        return true;
+                    }
+                    if (key.GetValue(RunValueName) != null) key.DeleteValue(RunValueName, false);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Diag.Fail("install.autostart", ex);
+                return false;
+            }
+        }
+
+        private static bool RegisterUninstallEntry(string installDir, string targetExe)
         {
             try
             {
@@ -506,7 +845,8 @@ namespace Go
                     key.SetValue("Publisher", "GameOptimizer Studio", RegistryValueKind.String);
                     key.SetValue("InstallLocation", installDir, RegistryValueKind.String);
                     key.SetValue("DisplayIcon", targetExe, RegistryValueKind.String);
-                    key.SetValue("UninstallString", "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"" + uninstPath + "\"", RegistryValueKind.String);
+                    key.SetValue("UninstallString", "\"" + targetExe + "\" --uninstall", RegistryValueKind.String);
+                    key.SetValue("QuietUninstallString", "\"" + targetExe + "\" --uninstall --silent", RegistryValueKind.String);
                     key.SetValue("EstimatedSize", kb, RegistryValueKind.DWord);
                     key.SetValue("NoModify", 1, RegistryValueKind.DWord);
                     key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
@@ -520,38 +860,26 @@ namespace Go
             }
         }
 
-        private static void WriteUninstallScript(string path)
+        private static void DeleteUninstallEntry()
         {
-            const string script =
-@"param([switch]$PurgeUserData, [switch]$Silent)
-$ErrorActionPreference = 'Stop'
-function Say($m, $c = 'Gray') { if (-not $Silent) { Write-Host $m -ForegroundColor $c } }
-Say '=== GameOptimizer Pro 卸载向导 ===' 'Cyan'
-$procs = @(Get-Process GameOptimizer -ErrorAction SilentlyContinue)
-if ($procs.Count -gt 0) {
-    foreach ($p in $procs) { try { $null = $p.CloseMainWindow() } catch { } }
-    Start-Sleep -Milliseconds 1200
-    @(Get-Process GameOptimizer -ErrorAction SilentlyContinue) | Stop-Process -Force -ErrorAction SilentlyContinue
-}
-$runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
-if (Test-Path $runKey) { Remove-ItemProperty -Path $runKey -Name 'GameOptimizer' -Force -ErrorAction SilentlyContinue }
-@(
-    (Join-Path ([Environment]::GetFolderPath('Desktop')) 'GameOptimizer Pro.lnk'),
-    (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\GameOptimizer Pro.lnk')
-) | ForEach-Object { if (Test-Path $_) { Remove-Item $_ -Force -ErrorAction SilentlyContinue } }
-$uKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\GameOptimizerPro'
-if (Test-Path $uKey) { Remove-Item $uKey -Recurse -Force -ErrorAction SilentlyContinue }
-$dir = Join-Path $env:LOCALAPPDATA 'Programs\GameOptimizer'
-if (Test-Path $dir) {
-    Get-ChildItem $dir -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'Uninstall.ps1' } | Remove-Item -Force -ErrorAction SilentlyContinue
-    try { Remove-Item $dir -Recurse -Force -ErrorAction SilentlyContinue } catch { }
-}
-$dataDir = Join-Path $env:LOCALAPPDATA 'GameOptimizer'
-if ($PurgeUserData -and (Test-Path $dataDir)) { Remove-Item $dataDir -Recurse -Force -ErrorAction SilentlyContinue }
-Say '[OK] 卸载完成（默认保留写前账本；如需一并清除请加 -PurgeUserData）。' 'Green'
-";
-            // UTF-8 with BOM：Windows PowerShell 5.1 需要 BOM 才能正确解析中文提示
-            File.WriteAllText(path, script, new UTF8Encoding(true));
+            try { Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(UninstallRegSubKey, false); }
+            catch { }
+        }
+
+        private static void DeleteLegacyScheduledTask()
+        {
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo("schtasks.exe", "/Delete /TN GameOptimizerPro /F");
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                psi.WindowStyle = ProcessWindowStyle.Hidden;
+                using (Process p = Process.Start(psi))
+                {
+                    if (p != null) p.WaitForExit(1500);
+                }
+            }
+            catch { }
         }
     }
 }

@@ -197,7 +197,7 @@ namespace Go
                   "Rev130 页面大修：图形虚拟多屏画布 / 网络四节点拓扑 / 档案卡牌墙 / 基准评级徽章全线就绪",
                   "canvas=" + canvasOk + " net=" + netTopoOk + " prof=" + profWallOk + " bench=" + benchOk);
 
-            // 5) Rev141 桌面安装引导带与命令面板入口（纯状态注入，绝不触碰真实桌面/注册表）
+            // 5) Rev142 一体化安装/快捷方式自选/原生卸载窗口与命令面板（纯内存/状态注入，绝不触碰真实桌面/注册表）
             AppInstall.InstallStatus fakePortable = new AppInstall.InstallStatus();
             fakePortable.CurrentExe = @"C:\Downloads\GameOptimizer.exe";
             fakePortable.InstallDir = @"C:\Users\Test\AppData\Local\Programs\GameOptimizer";
@@ -222,15 +222,34 @@ namespace Go
             Pump(40);
             bool hideOnDismiss = !shell.InstallBannerVisible;
 
-            shell.TestPalette("桌面快捷方式");
+            shell.TestPalette("卸载 GameOptimizer");
             Pump(60);
-            bool palHit = shell.PaletteResultCount > 0 && shell.PaletteFirstTitle.IndexOf("快捷方式", StringComparison.Ordinal) >= 0;
+            bool palUninstallHit = shell.PaletteResultCount > 0 && shell.PaletteFirstTitle.IndexOf("卸载", StringComparison.Ordinal) >= 0;
             shell.HidePalette();
 
+            // 验证 SetupDialog 在「首次安装默认勾选（仅桌面临时勾选，开始菜单/自启默认不强塞）」与「卸载模式」下均可无报错构建布局
+            SetupDialog dlgInstall = new SetupDialog(core, null, false, fakePortable);
+            FrameworkElement dlgInstRoot = dlgInstall.Content as FrameworkElement;
+            bool dlgDefaultsOk = dlgInstall.DesktopChecked && !dlgInstall.StartMenuChecked && !dlgInstall.AutostartChecked && !dlgInstall.PurgeDataChecked;
+            bool dlgLayoutOk = false;
+            if (dlgInstRoot != null)
+            {
+                dlgInstRoot.Measure(new Size(528, 800));
+                dlgInstRoot.Arrange(new Rect(0, 0, 528, dlgInstRoot.DesiredSize.Height));
+                SetupDialog dlgUninst = new SetupDialog(core, null, true, fakePortable);
+                FrameworkElement dlgUninstRoot = dlgUninst.Content as FrameworkElement;
+                if (dlgUninstRoot != null)
+                {
+                    dlgUninstRoot.Measure(new Size(528, 800));
+                    dlgUninstRoot.Arrange(new Rect(0, 0, 528, dlgUninstRoot.DesiredSize.Height));
+                    dlgLayoutOk = dlgInstRoot.DesiredSize.Height > 260 && dlgUninstRoot.DesiredSize.Height > 180;
+                }
+            }
+
             shell.TestSetInstallStatus(AppInstall.Probe(), true);
-            Check(showOnPortable && hideOnSource && hideOnDismiss && palHit,
-                  "Rev141 桌面软件引导：下载便携态显示、源码仓静默、保持便携收敛、Ctrl+K 命令命中",
-                  "portable=" + showOnPortable + " srcQuiet=" + hideOnSource + " dismiss=" + hideOnDismiss + " pal=" + palHit);
+            Check(showOnPortable && hideOnSource && hideOnDismiss && palUninstallHit && dlgDefaultsOk && dlgLayoutOk,
+                  "Rev142 一体化安装/卸载窗口：便携引导、默认不强塞开始菜单、Ctrl+K 卸载入口与双模布局全绿",
+                  "portable=" + showOnPortable + " srcQuiet=" + hideOnSource + " dismiss=" + hideOnDismiss + " pal=" + palUninstallHit + " def=" + dlgDefaultsOk + " dlg=" + dlgLayoutOk);
         }
     }
 }

@@ -173,7 +173,41 @@ namespace Go
                 return PhaseResult.End(Stages.Parse, 0, "tray-shot", sw.ElapsedMilliseconds);
             }
             if (o.UiTestOut != null) return PhaseResult.End(Stages.Parse, UiTest.Run(o.UiTestOut), "uitest", sw.ElapsedMilliseconds);
+            if (o.Uninstall)
+            {
+                if (o.Silent)
+                {
+                    AppInstall.UninstallResult ur = AppInstall.UninstallSelf(o.PurgeUserData, true, null);
+                    return PhaseResult.End(Stages.Parse, ur.Ok ? 0 : 1, "uninstall-silent", sw.ElapsedMilliseconds);
+                }
+                return PhaseResult.End(Stages.Parse, RunInteractiveUninstall(), "uninstall", sw.ElapsedMilliseconds);
+            }
             return PhaseResult.Continue(Stages.Parse, sw.ElapsedMilliseconds);
+        }
+
+        private static int RunInteractiveUninstall()
+        {
+            try
+            {
+                string stPath = IOPath.Combine(AppInstall.DefaultDataDir(), "ui.json");
+                if (File.Exists(stPath))
+                {
+                    System.Web.Script.Serialization.JavaScriptSerializer js = new System.Web.Script.Serialization.JavaScriptSerializer();
+                    UiState st = js.Deserialize<UiState>(File.ReadAllText(stPath, Encoding.UTF8));
+                    if (st != null && !string.IsNullOrEmpty(st.Theme)) T.ApplyTheme(st.Theme);
+                }
+            }
+            catch { }
+
+            Application ua = new Application();
+            ua.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            Core core = new Core();
+            try { Registry.Load(core); }
+            catch { }
+            SetupDialog dlg = new SetupDialog(core, null, true);
+            dlg.ShowDialog();
+            ua.Shutdown();
+            return 0;
         }
 
         // ====================================================================

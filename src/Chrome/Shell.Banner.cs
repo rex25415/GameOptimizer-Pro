@@ -108,7 +108,7 @@ namespace Go
             idot.Margin = new Thickness(0, 0, 9, 0);
             ig.Children.Add(idot);
 
-            TextBlock it = Ui.Tx("便携运行中 · 安装到本机并创建桌面与开始菜单快捷方式，下次打开不再难找", T.FsMicro, T.Text, T.FCn);
+            TextBlock it = Ui.Tx("便携运行中 · 可按需安装到本机并自选桌面/开始菜单快捷方式，下次打开不再难找", T.FsMicro, T.Text, T.FCn);
             it.VerticalAlignment = VerticalAlignment.Center;
             it.TextTrimming = TextTrimming.CharacterEllipsis;
             Grid.SetColumn(it, 1);
@@ -118,10 +118,10 @@ namespace Go
             iright.Orientation = Orientation.Horizontal;
             iright.VerticalAlignment = VerticalAlignment.Center;
 
-            Btn instBtn = new Btn("安装并建桌面图标", BtnKind.Primary);
+            Btn instBtn = new Btn("安装 / 自选快捷方式", BtnKind.Primary);
             instBtn.Height = T.BtnHXs;
             instBtn.Margin = new Thickness(0, 0, 6, 0);
-            instBtn.Click += delegate { InstallToDesktopFromUi(); };
+            instBtn.Click += delegate { OpenSetupDialog(false); };
             iright.Children.Add(instBtn);
 
             Btn keepBtn = new Btn("保持便携", BtnKind.Quiet);
@@ -181,7 +181,7 @@ namespace Go
             {
                 _installPromptDismissed = true;
                 SaveState();
-                Toast("已保持便携模式 · 随时可在左下角或 Ctrl+K 创建桌面快捷方式", true);
+                Toast("已保持便携模式 · 随时可在左下角、还原中心或 Ctrl+K 管理安装与卸载", true);
             }
             else
             {
@@ -190,31 +190,62 @@ namespace Go
             ApplyInstallBanner();
         }
 
-        public void InstallToDesktopFromUi()
+        public void OpenSetupDialog(bool uninstallMode)
         {
-            Ledger ledger = (_core != null && _core.Engine != null) ? _core.Engine.Ledger : null;
-            AppInstall.InstallResult res = AppInstall.InstallSelf(ledger);
+            try
+            {
+                _installStatus = AppInstall.Probe();
+                SetupDialog dlg = new SetupDialog(_core, this, uninstallMode, _installStatus);
+                dlg.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                Diag.Fail("shell.setup_dialog", ex);
+                Toast("无法打开应用管理窗口：" + ex.Message, false);
+            }
+        }
+
+        public void OnInstallStateChanged(AppInstall.InstallResult res)
+        {
             _installStatus = AppInstall.Probe();
             ApplyInstallBanner();
             RefreshInstallUi();
-            if (res.Ok)
+            if (res == null || !res.Ok) return;
+
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.Append(res.HotSwapped ? "已热更新安装目录" : "已保存到本机");
+            if (res.DesktopShortcutActive && res.StartMenuShortcutActive) sb.Append(" · 已建桌面与开始菜单快捷方式");
+            else if (res.DesktopShortcutActive) sb.Append(" · 已建桌面快捷方式");
+            else if (res.StartMenuShortcutActive) sb.Append(" · 已建开始菜单入口");
+            else sb.Append(" · 已按勾选清理快捷方式");
+            Toast(sb.ToString(), true);
+        }
+
+        public void PrepareForUninstall()
+        {
+            _uninstalling = true;
+            try { Program.ReleaseInstanceLock(); }
+            catch { }
+            try { if (_core != null && _core.Daemon != null) _core.Daemon.RemoveTrayIconNow(); }
+            catch { }
+        }
+
+        public void FinishUninstallExit()
+        {
+            _uninstalling = true;
+            _relaunching = true;
+            Dispatcher.BeginInvoke(new Action(delegate
             {
-                string msg = res.HotSwapped
-                    ? "已热更新安装目录并刷新桌面与开始菜单快捷方式"
-                    : "已安装到本机 · 桌面与开始菜单快捷方式已就绪";
-                Toast(msg, true);
-            }
-            else
-            {
-                Toast("创建快捷方式失败：" + (string.IsNullOrEmpty(res.Error) ? "请检查权限" : res.Error), false);
-            }
+                try { Application.Current.Shutdown(); }
+                catch (Exception ex) { Diag.Fail("shell.uninstall.shutdown", ex); }
+            }), DispatcherPriority.Background);
         }
 
         private void RefreshInstallChipColor()
         {
             if (_installChip == null) return;
             AppInstall.InstallStatus st = GetInstallStatus();
-            bool ok = st != null && st.FullyInstalled;
+            bool ok = st != null && st.IsInstalled;
             _installChip.Foreground = T.S(ok ? T.Mute : T.AccentDim);
         }
 
@@ -222,12 +253,12 @@ namespace Go
         {
             if (_installChip == null) return;
             AppInstall.InstallStatus st = GetInstallStatus();
-            bool ok = st != null && st.FullyInstalled;
-            _installChip.Text = ok ? "桌面图标" : "建桌面图标";
+            bool ok = st != null && st.IsInstalled;
+            _installChip.Text = ok ? "安装/卸载" : "安装到本机";
             RefreshInstallChipColor();
             Tip.Attach(_installChip, ok
-                ? ("已安装至本机并创建桌面与开始菜单快捷方式\n目录：" + st.InstallDir + "\n点击可重新对齐或修复快捷方式")
-                : "一键安装至本机固定目录，并创建桌面快捷方式、开始菜单入口与系统卸载项\n（源码自编译或便携用户可按需点击，不点则完全不改动桌面）");
+                ? ("已安装于本机 · 点击可自选开关桌面/开始菜单快捷方式，或直接卸载本软件\n目录：" + st.InstallDir)
+                : "点击打开应用管理：自由勾选桌面/开始菜单快捷方式、开机自启，或彻底卸载本软件");
         }
 
         /// <summary>自检用：只读横幅当前是否可见。</summary>

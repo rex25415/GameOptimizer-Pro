@@ -46,6 +46,9 @@ namespace Go.Daemon
         public bool AllocTest;
         public bool StressTest;
         public bool Elevated;
+        public bool Uninstall;
+        public bool Silent;
+        public bool PurgeUserData;
         public int DiagSecs;
         /// <summary>提权重启交接：等这个 pid 退出再抢单实例锁。</summary>
         public int WaitPid;
@@ -101,6 +104,9 @@ namespace Go.Daemon
                 else if (a == "--uitest") { if (Take(args, i, ref o.UiTestOut, a, ref bad)) i++; }
                 else if (a == "--timing") { if (Take(args, i, ref o.TimingOut, a, ref bad)) i++; }
                 else if (a == "--elevated") o.Elevated = true;
+                else if (a == "--uninstall") o.Uninstall = true;
+                else if (a == "--silent") o.Silent = true;
+                else if (a == "--purge-data") o.PurgeUserData = true;
                 else if (a == "--diag-secs")
                 {
                     int secs;

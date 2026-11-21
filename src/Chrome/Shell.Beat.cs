@@ -28,6 +28,7 @@ namespace Go
         // ====================================================================
         /// <summary>提权重启是"交接"不是"再来一份"。</summary>
         private bool _relaunching;
+        private bool _uninstalling;
 
         public void RelaunchElevated()
         {
@@ -226,7 +227,7 @@ namespace Go
             // 真正退出走 DaemonHost.Shutdown()：它先 Tray.Remove()，于是这里 Installed 已为 false，
             // 不会再被拦下来——这就是"退出"能真的退出的原因。
             Go.Daemon.DaemonHost d = _core == null ? null : _core.Daemon;
-            if (!_relaunching && d != null && d.CloseToTray && d.Tray.Installed)
+            if (!_relaunching && !_uninstalling && d != null && d.CloseToTray && d.Tray.Installed)
             {
                 e.Cancel = true;
                 Park();
@@ -234,7 +235,7 @@ namespace Go
             }
             _closing = true;
             ReleaseChromeHooks();
-            SaveState();
+            if (!_uninstalling) SaveState();
             base.OnClosing(e);
         }
     }
