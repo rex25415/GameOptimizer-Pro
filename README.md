@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Windows 10 / 11 零依赖单文件游戏性能控制台 · 写前原子账本 · 逐项可还原 · 原生 Win32 实时遥测</strong><br/>
-  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 140)</em>
+  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 141)</em>
 </p>
 
 <p align="center">
@@ -18,15 +18,15 @@
   </a>
   <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-3b82f6?style=flat-square" alt="Platform"/>
   <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-14b8a6?style=flat-square" alt="Zero Dependencies"/>
-  <img src="https://img.shields.io/badge/Binary-~1.24%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
+  <img src="https://img.shields.io/badge/Binary-~1.26%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-win-x64.exe">
-    <img src="https://img.shields.io/badge/Download%20EXE-v1.40.0%20%C2%B7%201.24%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-win-x64.exe">
+    <img src="https://img.shields.io/badge/Download%20EXE-v1.41.0%20%C2%B7%201.26%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
   </a>
   &nbsp;
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
@@ -35,7 +35,7 @@
 </p>
 
 <p align="center">
-  <sub><strong>普通玩家直接点击上方绿色按钮下载单文件 <code>.exe</code>，免安装双击即用（无需点击右上角绿色 <code>Code</code> 下载源码）</strong></sub>
+  <sub><strong>普通玩家直接点击上方绿色按钮下载 <code>.exe</code>，双击即可运行，程序内支持一键创建桌面与开始菜单快捷方式（无需点右上角绿色 <code>Code</code> 下载源码）</strong></sub>
 </p>
 
 <p align="center">
@@ -115,26 +115,26 @@
 ## 下载与上手
 
 ### 3 步极速上手
-1. **下载运行**：直接下载下方单文件 `.exe`，双击即可在**普通用户权限**下查看完整硬件拓扑、四维体检与负优化残留扫描（零写入）。
-2. **按需调优**：确认需要写入 `HKLM` / 电源方案 / 服务时，点击窗口内「提权重启」即可；每项改动前自动记录原值到写前账本。
-3. **随时无损还原**：在 `10 还原中心` 可随时逐条回放原值，或长按「全部还原」一键回到接管前状态。
+1. **下载运行**：下载单文件 `.exe` 后直接双击即可运行（默认**普通用户权限**，零写入立即可看硬件体检、四维健康评分与负优化残留扫描）。
+2. **一键固定到桌面（可选）**：首次从下载目录打开时，顶部会温和提示**「安装并建桌面图标」**，点一下自动安放至固定目录并建好桌面快捷方式、开始菜单搜索入口与系统卸载项（以后清理下载目录也不会找不到）；若习惯纯绿色运行，点「保持便携」即不再提醒。
+3. **按需调优与随时还原**：写入 `HKLM` / 电源方案 / 服务时按需点击「提权重启」，每项改动前自动记录原值至写前账本，随时可在 `10 还原中心` 逐条或一键全部无损恢复。
 
 ### 方式一：直接下载成品（推荐普通玩家）
 
 | 发行文件 | 适用场景 | 快捷入口 |
 |---|---|---|
-| **`GameOptimizer-Pro-v1.40.0-win-x64.exe`** | 单文件绿色版（`~1.24 MB`），无需安装，双击即跑 | [**直接下载 EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-win-x64.exe) |
-| **`GameOptimizer-Pro-v1.40.0-portable.zip`** | 完整便携包，附 `deploy.ps1` / `uninstall.ps1` 安装卸载脚本 | [**直接下载 ZIP**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-portable.zip) |
+| **`GameOptimizer-Pro-v1.41.0-win-x64.exe`** | 免安装绿色单文件（`~1.26 MB`），下载双击即可运行，支持程序内一键建桌面与开始菜单图标 | [**直接下载 EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-win-x64.exe) |
+| **`GameOptimizer-Pro-v1.41.0-portable.zip`** | 完整便携压缩包，附带双击即可运行的 **`Install-GameOptimizer.bat`**（一键安装建桌面图标）与 **`Uninstall-GameOptimizer.bat`** | [**直接下载 ZIP**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-portable.zip) |
 | **`SHA256SUMS.txt`** | 发行包 SHA-256 哈希校验清单 | [**查看 Releases**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest) |
 
 > **如何核对文件哈希（PowerShell）**：
 > ```powershell
-> Get-FileHash .\GameOptimizer-Pro-v1.40.0-win-x64.exe -Algorithm SHA256
+> Get-FileHash .\GameOptimizer-Pro-v1.41.0-win-x64.exe -Algorithm SHA256
 > ```
 
-### 方式二：零依赖从源码编译（Windows 10 / 11 自带环境即可）
+### 方式二：零依赖从源码编译（开发者自选是否创建快捷方式）
 
-无需安装 Visual Studio 或 .NET SDK，仅用 Windows 内置的 `.NET Framework 4.8 csc.exe`：
+无需安装 Visual Studio 或 .NET SDK，仅用 Windows 内置的 `.NET Framework 4.8 csc.exe`（程序自动识别源码目录，自编译运行时**不会**弹出安装引导，是否创建桌面快捷方式完全由你决定）：
 
 ```powershell
 git clone https://github.com/rex25415/GameOptimizer-Pro.git
@@ -164,8 +164,8 @@ Rev 140（**IRONCLAD KERNEL**）将关键后端热路径全面收敛至零异常
 ### 内置 6 套自动化自检
 
 ```powershell
-.\out\GameOptimizer.exe --selftest selftest.txt          # 113 项后端原子事务、RegKv、并发与 Win32 校验
-.\out\GameOptimizer.exe --uitest uitest.txt              # 84 项前端布局、交互、换肤、吸顶与 11 页回归
+.\out\GameOptimizer.exe --selftest selftest.txt          # 117 项后端原子事务、RegKv、并发、原生安装与 Win32 校验
+.\out\GameOptimizer.exe --uitest uitest.txt              # 85 项前端布局、交互、换肤、吸顶、引导与 11 页回归
 .\out\GameOptimizer.exe --alloc-test                     # 11 项图元与采样器零分配预算探针
 .\out\GameOptimizer.exe --stress-test                    # 8 项切页/换肤/面板泄漏与线程退出压测
 .\out\GameOptimizer.exe --daemon-test                    # 守护引擎、会话落点与战报边界回归

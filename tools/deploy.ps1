@@ -15,13 +15,21 @@ $exe  = Join-Path $dst 'GameOptimizer.exe'
 New-Item -ItemType Directory -Force -Path $dst | Out-Null
 
 # ---- 1. 二进制与资产 ----
-# 兼容源码仓库模式（out\GameOptimizer.exe）与绿色发布包模式（同级或上级目录 GameOptimizer.exe）
+# 正在运行的 exe 是被锁住的：若无法替换主程序，立即中止而不覆盖 .ico/.md，避免图文版本不一致。
+# 兼容源码仓库（out\GameOptimizer.exe）与绿色发布包（同级或上级 GameOptimizer*.exe）
 $srcExe = Join-Path $root 'out\GameOptimizer.exe'
 if (-not (Test-Path $srcExe)) {
-    $alt1 = Join-Path $PSScriptRoot 'GameOptimizer.exe'
-    $alt2 = Join-Path $root 'GameOptimizer.exe'
-    if (Test-Path $alt1) { $srcExe = $alt1 }
-    elseif (Test-Path $alt2) { $srcExe = $alt2 }
+    $candidates = @(
+        (Join-Path $PSScriptRoot 'GameOptimizer.exe'),
+        (Join-Path $root 'GameOptimizer.exe')
+    )
+    foreach ($c in $candidates) {
+        if (Test-Path $c) { $srcExe = $c; break }
+    }
+    if (-not (Test-Path $srcExe)) {
+        $glob = Get-ChildItem $root -Filter 'GameOptimizer*.exe' -File -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($glob) { $srcExe = $glob.FullName }
+    }
 }
 if (-not (Test-Path $srcExe)) {
     Write-Host ('[DEPLOY FAILED] 找不到构建产物：' + $srcExe + '（请先运行 .\build.ps1）') -ForegroundColor Red
@@ -112,12 +120,21 @@ if ($mine.Count -eq 1) {
     Write-Host ('  桌面快捷方式：新建 ' + (Split-Path $new -Leaf))
 }
 
-# ---- 3. 开始菜单：同名项只改图标，不新建 ----
+# ---- 3. 开始菜单：复用/去重，若尚不存在则新建（让 Win 搜索立即可见）----
 $smRoot = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs'
 if (Test-Path $smRoot) {
-    Get-ChildItem $smRoot -Recurse -Filter '*.lnk' -ErrorAction SilentlyContinue |
-        Where-Object { (Get-Target $_.FullName) -eq $exe } |
-        ForEach-Object { Set-Link $_.FullName; Write-Host ('  开始菜单：' + $_.Name + ' 图标已对齐 exe,0') }
+    $smMine = @(Get-ChildItem $smRoot -Recurse -Filter '*.lnk' -ErrorAction SilentlyContinue |
+                Where-Object { (Get-Target $_.FullName) -eq $exe })
+    if ($smMine.Count -ge 1) {
+        foreach ($item in $smMine) {
+            Set-Link $item.FullName
+            Write-Host ('  开始菜单：复用并对齐 ' + $item.Name)
+        }
+    } else {
+        $smNew = Join-Path $smRoot 'GameOptimizer Pro.lnk'
+        Set-Link $smNew
+        Write-Host ('  开始菜单：新建 ' + (Split-Path $smNew -Leaf))
+    }
 }
 
 # ---- 3.5 部署卸载脚本、刷新注册表元数据与清理历史失效项 ----

@@ -39,7 +39,7 @@ namespace Go
         public const string ProductSub = "VANGUARD CONSOLE";
 
         /// <summary>当前修订号与年月（导轨脚注 / 启动卡 / 程序集版本共用，唯一真源）。</summary>
-        public const int Rev = 140;
+        public const int Rev = 141;
         public const string RevStamp = "2026.11";
     }
 }

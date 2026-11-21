@@ -19,9 +19,20 @@ namespace Go
     {
         private Border _banner;
         private bool _bannerDismissed;
+        private Border _installBanner;
+        private bool _installSessionDismissed;
+        private AppInstall.InstallStatus _installStatus;
+
+        private AppInstall.InstallStatus GetInstallStatus()
+        {
+            if (_installStatus == null) _installStatus = AppInstall.Probe();
+            return _installStatus;
+        }
 
         private UIElement BuildBanner()
         {
+            StackPanel stack = new StackPanel();
+
             // Rev79：常驻提示不该是一块黄色横幅 —— 那是"警报"的语言。
             // 仪器不会每页都朝你喊一句"你现在不是管理员"；它只在状态行里标一个点。
             // 所以这里压成一条 26px 的低对比状态带：仍然可读、仍然可操作，
@@ -75,8 +86,71 @@ namespace Go
             g.Children.Add(rightSide);
 
             _banner.Child = g;
+            stack.Children.Add(_banner);
+
+            // Rev141：普通用户从下载/临时目录打开单文件 exe 时，温和提示一键安装并建立桌面/开始菜单快捷方式；
+            // 源码开发仓（含 build.ps1）或已从安装目录启动时不打扰，保持便携也不再反复弹出。
+            _installBanner = new Border();
+            _installBanner.Background = T.S(T.AccentA(0x10));
+            _installBanner.BorderBrush = T.S(T.AccentA(0x32));
+            _installBanner.BorderThickness = new Thickness(0, 0, 0, 1);
+            _installBanner.Padding = new Thickness(T.PadX, 3, T.PadX - 8, 3);
+
+            Grid ig = new Grid();
+            ig.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            ig.ColumnDefinitions.Add(new ColumnDefinition());
+            ig.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            System.Windows.Shapes.Ellipse idot = new System.Windows.Shapes.Ellipse();
+            idot.Width = 5; idot.Height = 5;
+            idot.Fill = T.S(T.Accent);
+            idot.VerticalAlignment = VerticalAlignment.Center;
+            idot.Margin = new Thickness(0, 0, 9, 0);
+            ig.Children.Add(idot);
+
+            TextBlock it = Ui.Tx("便携运行中 · 安装到本机并创建桌面与开始菜单快捷方式，下次打开不再难找", T.FsMicro, T.Text, T.FCn);
+            it.VerticalAlignment = VerticalAlignment.Center;
+            it.TextTrimming = TextTrimming.CharacterEllipsis;
+            Grid.SetColumn(it, 1);
+            ig.Children.Add(it);
+
+            StackPanel iright = new StackPanel();
+            iright.Orientation = Orientation.Horizontal;
+            iright.VerticalAlignment = VerticalAlignment.Center;
+
+            Btn instBtn = new Btn("安装并建桌面图标", BtnKind.Primary);
+            instBtn.Height = T.BtnHXs;
+            instBtn.Margin = new Thickness(0, 0, 6, 0);
+            instBtn.Click += delegate { InstallToDesktopFromUi(); };
+            iright.Children.Add(instBtn);
+
+            Btn keepBtn = new Btn("保持便携", BtnKind.Quiet);
+            keepBtn.Height = T.BtnHXs;
+            keepBtn.Margin = new Thickness(0, 0, 4, 0);
+            keepBtn.Click += delegate { DismissInstallPrompt(true); };
+            iright.Children.Add(keepBtn);
+
+            Grid iclose = new Grid();
+            iclose.Width = 22; iclose.Height = 22;
+            iclose.Background = Brushes.Transparent;
+            iclose.Cursor = Cursors.Hand;
+            System.Windows.Shapes.Path ix = Ui.Icon("M7 7 L17 17 M17 7 L7 17", 11, T.Mute, 1.3);
+            iclose.Children.Add(ix);
+            iclose.MouseEnter += delegate { ix.Stroke = T.S(T.Text); };
+            iclose.MouseLeave += delegate { ix.Stroke = T.S(T.Mute); };
+            Pressable.On(iclose, delegate { DismissInstallPrompt(false); });
+            Tip.Attach(iclose, "本次会话收起提示");
+            iright.Children.Add(iclose);
+
+            Grid.SetColumn(iright, 2);
+            ig.Children.Add(iright);
+
+            _installBanner.Child = ig;
+            stack.Children.Add(_installBanner);
+
             ApplyElevation();
-            return _banner;
+            ApplyInstallBanner();
+            return stack;
         }
 
         /// <summary>根据提权状态显隐横幅。提权成功后横幅直接消失，不需要手动关闭。</summary>
@@ -87,10 +161,98 @@ namespace Go
             _banner.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        /// <summary>根据安装与运行位置显隐桌面安装引导带（离屏渲染与源码开发仓自动静音）。</summary>
+        public void ApplyInstallBanner()
+        {
+            if (_installBanner == null) return;
+            bool headless = _core != null && _core.HeadlessRender;
+            AppInstall.InstallStatus st = GetInstallStatus();
+            bool show = !headless
+                && !_installPromptDismissed
+                && !_installSessionDismissed
+                && st != null
+                && st.NeedsInstallPrompt;
+            _installBanner.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public void DismissInstallPrompt(bool persist)
+        {
+            if (persist)
+            {
+                _installPromptDismissed = true;
+                SaveState();
+                Toast("已保持便携模式 · 随时可在左下角或 Ctrl+K 创建桌面快捷方式", true);
+            }
+            else
+            {
+                _installSessionDismissed = true;
+            }
+            ApplyInstallBanner();
+        }
+
+        public void InstallToDesktopFromUi()
+        {
+            Ledger ledger = (_core != null && _core.Engine != null) ? _core.Engine.Ledger : null;
+            AppInstall.InstallResult res = AppInstall.InstallSelf(ledger);
+            _installStatus = AppInstall.Probe();
+            ApplyInstallBanner();
+            RefreshInstallUi();
+            if (res.Ok)
+            {
+                string msg = res.HotSwapped
+                    ? "已热更新安装目录并刷新桌面与开始菜单快捷方式"
+                    : "已安装到本机 · 桌面与开始菜单快捷方式已就绪";
+                Toast(msg, true);
+            }
+            else
+            {
+                Toast("创建快捷方式失败：" + (string.IsNullOrEmpty(res.Error) ? "请检查权限" : res.Error), false);
+            }
+        }
+
+        private void RefreshInstallChipColor()
+        {
+            if (_installChip == null) return;
+            AppInstall.InstallStatus st = GetInstallStatus();
+            bool ok = st != null && st.FullyInstalled;
+            _installChip.Foreground = T.S(ok ? T.Mute : T.AccentDim);
+        }
+
+        private void RefreshInstallUi()
+        {
+            if (_installChip == null) return;
+            AppInstall.InstallStatus st = GetInstallStatus();
+            bool ok = st != null && st.FullyInstalled;
+            _installChip.Text = ok ? "桌面图标" : "建桌面图标";
+            RefreshInstallChipColor();
+            Tip.Attach(_installChip, ok
+                ? ("已安装至本机并创建桌面与开始菜单快捷方式\n目录：" + st.InstallDir + "\n点击可重新对齐或修复快捷方式")
+                : "一键安装至本机固定目录，并创建桌面快捷方式、开始菜单入口与系统卸载项\n（源码自编译或便携用户可按需点击，不点则完全不改动桌面）");
+        }
+
         /// <summary>自检用：只读横幅当前是否可见。</summary>
         public bool BannerVisible
         {
             get { return _banner != null && _banner.Visibility == Visibility.Visible; }
+        }
+
+        /// <summary>自检用：桌面安装引导带当前是否可见。</summary>
+        public bool InstallBannerVisible
+        {
+            get { return _installBanner != null && _installBanner.Visibility == Visibility.Visible; }
+        }
+
+        /// <summary>自检用：注入虚拟安装探测状态以验证横幅显隐规则（不触碰真实桌面/注册表）。</summary>
+        public void TestSetInstallStatus(AppInstall.InstallStatus st, bool resetDismiss)
+        {
+            _installStatus = st;
+            if (resetDismiss)
+            {
+                _installPromptDismissed = false;
+                _installSessionDismissed = false;
+            }
+            ApplyInstallBanner();
+            RefreshInstallUi();
         }
 
         // ---- 焦点归还 ------------------------------------------------------

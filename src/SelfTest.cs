@@ -51,6 +51,7 @@ namespace Go
                 TestRev110Aether();
                 TestRev130Vanguard();
                 TestRev140Ironclad();
+                TestRev141DesktopInstall();
                 // 这两条必须最后跑：容量断言会故意把 Diag 表灌满，之后的 tag 都会并入 __overflow__。
                 TestLedgerSandbox();
                 TestDiagCapacity();

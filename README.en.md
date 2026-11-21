@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Zero-Dependency Single-File Windows 10/11 Game Performance Console · Write-Ahead Reversible Ledger · Native Win32 Telemetry</strong><br/>
-  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 140)</em>
+  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 141)</em>
 </p>
 
 <p align="center">
@@ -18,15 +18,15 @@
   </a>
   <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-3b82f6?style=flat-square" alt="Platform"/>
   <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-14b8a6?style=flat-square" alt="Zero Dependencies"/>
-  <img src="https://img.shields.io/badge/Binary-~1.24%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
+  <img src="https://img.shields.io/badge/Binary-~1.26%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-win-x64.exe">
-    <img src="https://img.shields.io/badge/Download%20EXE-v1.40.0%20%C2%B7%201.24%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-win-x64.exe">
+    <img src="https://img.shields.io/badge/Download%20EXE-v1.41.0%20%C2%B7%201.26%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
   </a>
   &nbsp;
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
@@ -35,7 +35,7 @@
 </p>
 
 <p align="center">
-  <sub><strong>Looking to run it right away? Click the green button above for the standalone <code>.exe</code> — no need to use the green <code>Code</code> source ZIP.</strong></sub>
+  <sub><strong>Looking to run it right away? Click the green button above for the standalone <code>.exe</code> with built-in one-click Desktop & Start Menu shortcut setup — no need to download the source ZIP.</strong></sub>
 </p>
 
 <p align="center">
@@ -113,24 +113,24 @@ Most "one-click Windows gaming optimizer" scripts silently overwrite registry ke
 ## Download and Quick Start
 
 ### 3-Step Quick Start
-1. **Run Read-Only First**: Download the standalone `.exe` and launch it as a **standard user** to inspect hardware topology, 4-axis health diagnostics, and third-party leftover tweaks with zero writes.
-2. **Elevate On Demand**: Click "Restart Elevated" inside the console only when applying HKLM / power policy / service tweaks — every original value is journaled atomically beforehand.
-3. **Revert Anytime**: Open **10 Restore Center** to undo any item individually or hold **Revert All** to restore your exact pre-takeover system state.
+1. **Run Read-Only First**: Double-click the standalone `.exe` as a **standard user** to inspect hardware topology, 4-axis health diagnostics, and third-party leftover tweaks with zero writes.
+2. **Pin as a Desktop App (Optional)**: When launched from `Downloads` for the first time, a subtle top bar offers one-click **Install & Create Desktop Shortcut** (copies to `%LOCALAPPDATA%\Programs\GameOptimizer`, creates Desktop + Start Menu shortcuts, and registers Windows Apps Uninstall); click **Keep Portable** to stay 100% portable forever.
+3. **Elevate On Demand & Revert Anytime**: Elevate only when applying HKLM / power / service tweaks; undo any item individually or all at once in **10 Restore Center**.
 
 ### Option 1: Pre-Built Binaries
 
 | Asset | Best For | Link |
 |---|---|---|
-| **`GameOptimizer-Pro-v1.40.0-win-x64.exe`** | Standalone single-file executable (`~1.24 MB`), double-click to run | [**Download EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-win-x64.exe) |
-| **`GameOptimizer-Pro-v1.40.0-portable.zip`** | Portable bundle including `deploy.ps1` & `uninstall.ps1` | [**Download ZIP**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-portable.zip) |
+| **`GameOptimizer-Pro-v1.41.0-win-x64.exe`** | Standalone single-file executable (`~1.26 MB`) with built-in one-click Desktop & Start Menu shortcut setup | [**Download EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-win-x64.exe) |
+| **`GameOptimizer-Pro-v1.41.0-portable.zip`** | Portable bundle with double-click **`Install-GameOptimizer.bat`** and **`Uninstall-GameOptimizer.bat`** | [**Download ZIP**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.41.0/GameOptimizer-Pro-v1.41.0-portable.zip) |
 | **`SHA256SUMS.txt`** | SHA-256 verification checksums | [**Latest Release**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest) |
 
 ```powershell
-Get-FileHash .\GameOptimizer-Pro-v1.40.0-win-x64.exe -Algorithm SHA256
+Get-FileHash .\GameOptimizer-Pro-v1.41.0-win-x64.exe -Algorithm SHA256
 ```
 
-### Option 2: Zero-Dependency Build from Source (Windows 10 / 11)
-No Visual Studio or .NET SDK needed:
+### Option 2: Zero-Dependency Build from Source (Shortcut Creation Optional)
+No Visual Studio or .NET SDK needed (source builds auto-detect `build.ps1` and never prompt to install — create shortcuts only if you choose):
 
 ```powershell
 git clone https://github.com/rex25415/GameOptimizer-Pro.git
@@ -151,7 +151,7 @@ Rev 140 (**IRONCLAD KERNEL**) moves hot paths onto zero-exception native Win32 A
 - **Zero `Process.GetProcessById` full-table scans**: Native single-handle affinity read **`2.7 µs`**, cached physical-core mask **`0.0 µs`**, liveness + PID-reuse guard **`2.3 µs`**, private bytes **`2.4 µs`** (vs `~13.8 ms` managed full-table scan).
 - **Active TCP PID aggregation (`net.tcp.pid`)**: Persistent high-water buffer + short-TTL PID name cache **`P50 1.82 ms`** (10.9× faster) + parallel LAN/WAN dual-path probe.
 - **Zero-alloc vector visuals**: `Waveform 41 B/frame`, `MemRibbon 0 B/frame`, `PerfSampler 0 B/tick`, zero `DropShadowEffect` offscreen shadow surfaces.
-- **6 Built-In Verification Suites**: `--selftest` (`113/0`), `--uitest` (`84/0`), `--alloc-test` (`11/0`), `--stress-test` (`8/0`), `--backend-bench` (`fail=0`), `--daemon-test`.
+- **6 Built-In Verification Suites**: `--selftest` (`117/0`), `--uitest` (`85/0`), `--alloc-test` (`11/0`), `--stress-test` (`8/0`), `--backend-bench` (`fail=0`), `--daemon-test`.
 
 ---
 

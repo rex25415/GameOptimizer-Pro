@@ -1,3 +1,17 @@
+## Rev 141 · 2026-11-21（DESKTOP CITIZEN 桌面软件化与快捷方式闭环：内建原生 COM IShellLinkW 一键安装 · 下载态温和引导与源码仓自动静音 · 便携包双击安装脚本）
+
+- **原生零依赖桌面安装与快捷方式引擎（`src/Kernel/AppInstall.cs`）**：
+  - 使用原生 COM `IShellLinkW + IPersistFile` 与 `SHChangeNotify`，零 WSH / 零 PowerShell 黑框闪烁即可完成单文件 exe 复制至 `%LOCALAPPDATA%\Programs\GameOptimizer\`（支持旧实例原子重命名热替换）、桌面与开始菜单 `.lnk` 创建与去重、内嵌 `Uninstall.ps1` 落盘及 `HKCU\...\Uninstall\GameOptimizerPro` 系统卸载项注册。
+  - 智能区分运行来源：普通用户从下载/临时目录打开且未安装时触发引导；开发者在源码仓（含 `build.ps1 + src\App.cs`）自编译或已从安装目录启动时自动静音零打扰。
+- **三处无侵入式桌面入口（`Shell.Banner.cs` / `Shell.Rail.cs` / `Shell.Palette.cs` / `Shell.Nav.cs`）**：
+  - 顶部温和引导带：仅在下载便携态首次显示，支持一键「安装并建桌面图标」或永久「保持便携」（状态持久化至 `ui.json`）；
+  - 侧栏底行零高度增量动作标签（`建桌面图标` / `桌面图标`）与 `Ctrl+K` 命令面板（「安装到本机并创建桌面快捷方式」「打开程序安装目录」），随时可补建或对齐图标。
+- **部署与便携包双击体验升级（`tools/deploy.ps1` / `tools/Install-GameOptimizer.bat` / `tools/Uninstall-GameOptimizer.bat`）**：
+  - `deploy.ps1` 补齐全新环境自动新建开始菜单快捷方式及便携包 `.exe` 通配识别；新增双击即用的 `Install-GameOptimizer.bat` 与 `Uninstall-GameOptimizer.bat`，无需普通用户手动输入 PowerShell 命令。
+- **验收**：零警告编译；`--selftest 117/0`（新增 4 项 Rev 141 沙箱探测/原生 `.lnk` 创建去重/回读回归）、`--uitest 85/0`、`--alloc-test` 与 `--stress-test` 全通过，11 页离屏渲染冷启动 `rail_foot` 零回归。
+
+---
+
 ## Rev 140 · 2026-11-21（IRONCLAD KERNEL 后端全面重构、原生 Win32 加速与并发稳定性升级：RegGetValueW 零异常直读 · 清零全仓 GetProcessById 全表扫描 · NetTrace 10.9× 加速 · ProcessScan 并发竞态修复）
 
 - **原生 Win32 注册表引擎（`src/Reg.cs`）**：
@@ -420,7 +434,7 @@
 - **语言/运行时**：PowerShell 5.1 单体脚本（9781 行）→ C# 5 + WPF 代码构建，编译为约 250 KB 单文件 exe。
 - **UI**：13 页代码拼接 → 11 页统一设计系统（令牌 / 原语 / 控件 / 自绘图元 四层）。
 - **采样**：WMI 轮询 → NtQuerySystemInformation 直读，单后台线程，1Hz < 0.5ms。
-- **状态目录**：修复旧版硬编码开发目录路径（13 处）导致「备份写不进去则全部动作静默中止」的问题，统一迁到 %LOCALAPPDATA%\GameOptimizer。
+- **状态目录**：修复旧版硬编码 <legacy-workspace>\state（13 处）导致「备份写不进去则全部动作静默中止」的问题，统一迁到 %LOCALAPPDATA%\GameOptimizer。
 - **异常策略**：旧版 495 个 catch 中 394 个为空；新版只在「读取可选值」处吞异常，所有写入链路失败必须向上返回并在 UI 呈现。
 
 ### 功能

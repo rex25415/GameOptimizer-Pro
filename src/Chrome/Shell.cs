@@ -29,6 +29,7 @@ namespace Go
         public bool Maximized { get; set; }
         public string Page { get; set; }
         public string Theme { get; set; }
+        public bool InstallPromptDismissed { get; set; }
     }
 
     public partial class Shell : Window
@@ -45,7 +46,8 @@ namespace Go
         private DispatcherTimer _fgWatch;
         private int _selfPid;
 
-        private TextBlock _clock, _statLine, _ticker, _sysCpu, _sysGpu, _sysVer;
+        private TextBlock _clock, _statLine, _ticker, _sysCpu, _sysGpu, _sysVer, _installChip;
+        private bool _installPromptDismissed;
         private Sparkline _pulse;
         private Border _telemetryIsland;
         private Border _telemetrySep;

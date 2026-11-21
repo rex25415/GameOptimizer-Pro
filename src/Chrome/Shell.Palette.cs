@@ -481,6 +481,20 @@ namespace Go
             elev.Run = delegate { RelaunchElevated(); };
             r.Add(elev);
 
+            AppInstall.InstallStatus ist = GetInstallStatus();
+            bool instOk = ist != null && ist.FullyInstalled;
+            AddShortcut(r,
+                instOk ? "刷新桌面与开始菜单快捷方式" : "安装到本机并创建桌面快捷方式",
+                instOk ? ("已安装于 " + ist.InstallDir + " · 重新对齐快捷方式") : "复制主程序至固定目录 · 创建桌面与开始菜单图标 · 注册系统卸载项",
+                Glyph.Download, "SYSTEM", delegate { InstallToDesktopFromUi(); });
+
+            string openDir = (ist != null && ist.InstalledBinaryExists) ? ist.InstallDir : AppDomain.CurrentDomain.BaseDirectory;
+            AddShortcut(r, "打开程序安装目录", openDir, Glyph.Log, "FILE", delegate
+            {
+                try { System.Diagnostics.Process.Start("explorer.exe", openDir); }
+                catch (Exception ex) { Diag.Fail("palette.openinstall", ex); }
+            });
+
             PaletteItem bench = new PaletteItem();
             bench.Title = "打开基准体检并开始采样";
             bench.Hint = "8 秒唤醒延迟分布 · 前后对比";

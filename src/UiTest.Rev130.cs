@@ -196,6 +196,41 @@ namespace Go
             Check(canvasOk && netTopoOk && profWallOk && benchOk,
                   "Rev130 页面大修：图形虚拟多屏画布 / 网络四节点拓扑 / 档案卡牌墙 / 基准评级徽章全线就绪",
                   "canvas=" + canvasOk + " net=" + netTopoOk + " prof=" + profWallOk + " bench=" + benchOk);
+
+            // 5) Rev141 桌面安装引导带与命令面板入口（纯状态注入，绝不触碰真实桌面/注册表）
+            AppInstall.InstallStatus fakePortable = new AppInstall.InstallStatus();
+            fakePortable.CurrentExe = @"C:\Downloads\GameOptimizer.exe";
+            fakePortable.InstallDir = @"C:\Users\Test\AppData\Local\Programs\GameOptimizer";
+            fakePortable.InstalledExe = @"C:\Users\Test\AppData\Local\Programs\GameOptimizer\GameOptimizer.exe";
+            fakePortable.RunningFromInstallDir = false;
+            fakePortable.RunningFromSourceTree = false;
+            fakePortable.InstalledBinaryExists = false;
+            fakePortable.HasDesktopShortcut = false;
+
+            shell.TestSetInstallStatus(fakePortable, true);
+            Pump(40);
+            bool showOnPortable = shell.InstallBannerVisible;
+
+            AppInstall.InstallStatus fakeSource = new AppInstall.InstallStatus();
+            fakeSource.RunningFromSourceTree = true;
+            shell.TestSetInstallStatus(fakeSource, true);
+            Pump(40);
+            bool hideOnSource = !shell.InstallBannerVisible;
+
+            shell.TestSetInstallStatus(fakePortable, true);
+            shell.DismissInstallPrompt(true);
+            Pump(40);
+            bool hideOnDismiss = !shell.InstallBannerVisible;
+
+            shell.TestPalette("桌面快捷方式");
+            Pump(60);
+            bool palHit = shell.PaletteResultCount > 0 && shell.PaletteFirstTitle.IndexOf("快捷方式", StringComparison.Ordinal) >= 0;
+            shell.HidePalette();
+
+            shell.TestSetInstallStatus(AppInstall.Probe(), true);
+            Check(showOnPortable && hideOnSource && hideOnDismiss && palHit,
+                  "Rev141 桌面软件引导：下载便携态显示、源码仓静默、保持便携收敛、Ctrl+K 命令命中",
+                  "portable=" + showOnPortable + " srcQuiet=" + hideOnSource + " dismiss=" + hideOnDismiss + " pal=" + palHit);
         }
     }
 }

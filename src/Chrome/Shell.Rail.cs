@@ -333,13 +333,30 @@ namespace Go
             foot.Children.Add(themeBar);
             _footTexts.Add(themeBar);
 
-            StackPanel verRow = new StackPanel { Orientation = Orientation.Horizontal };
+            Grid verRow = new Grid();
+            verRow.ColumnDefinitions.Add(new ColumnDefinition());
+            verRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            StackPanel verLeft = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             Border verDot = Ui.Dot(T.Accent, 4);
             verDot.Margin = new Thickness(0, 0, 6, 0);
             verDot.VerticalAlignment = VerticalAlignment.Center;
-            verRow.Children.Add(verDot);
+            verLeft.Children.Add(verDot);
             _sysVer = Ui.Mono("REV " + Brand.Rev + " · " + Brand.RevStamp, T.FsNano, T.Mute);
-            verRow.Children.Add(_sysVer);
+            verLeft.Children.Add(_sysVer);
+            verRow.Children.Add(verLeft);
+
+            _installChip = Ui.Tx("", T.FsNano, T.AccentDim, T.FCn);
+            _installChip.VerticalAlignment = VerticalAlignment.Center;
+            _installChip.HorizontalAlignment = HorizontalAlignment.Right;
+            _installChip.Cursor = Cursors.Hand;
+            _installChip.MouseEnter += delegate { if (_installChip != null) _installChip.Foreground = T.S(T.Accent); };
+            _installChip.MouseLeave += delegate { RefreshInstallChipColor(); };
+            Pressable.On(_installChip, delegate { InstallToDesktopFromUi(); });
+            Grid.SetColumn(_installChip, 1);
+            verRow.Children.Add(_installChip);
+            RefreshInstallUi();
+
             foot.Children.Add(verRow);
             _footTexts.Add(verRow);
 

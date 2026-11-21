@@ -216,6 +216,7 @@ namespace Go
                 if (st.Maximized) WindowState = WindowState.Maximized;
                 if (!string.IsNullOrEmpty(st.Page)) _pendingPage = st.Page;
                 if (!string.IsNullOrEmpty(st.Theme)) T.ApplyTheme(st.Theme);
+                _installPromptDismissed = st.InstallPromptDismissed;
             }
             catch (Exception ex) { Diag.Fail("ui.state.load", ex); }
         }
@@ -240,6 +241,7 @@ namespace Go
                 st.Left = r.X; st.Top = r.Y; st.Width = r.Width; st.Height = r.Height;
                 st.Page = _cur != null ? _cur.Key : "overview";
                 st.Theme = T.ThemeId;
+                st.InstallPromptDismissed = _installPromptDismissed;
                 JavaScriptSerializer js = new JavaScriptSerializer();
                 string dir = IOPath.GetDirectoryName(_statePath);
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
