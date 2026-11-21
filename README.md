@@ -10,11 +10,42 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-0ea5e9?style=flat-square" alt="Platform"/>
-  <img src="https://img.shields.io/badge/Runtime-.NET%20Framework%204.8%20(Built--in)-3b82f6?style=flat-square" alt="Runtime"/>
-  <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-10b981?style=flat-square" alt="Zero Dependencies"/>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
+    <img src="https://img.shields.io/github/v/release/rex25415/GameOptimizer-Pro?style=flat-square&color=0ea5e9&label=Release" alt="Latest Release"/>
+  </a>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases">
+    <img src="https://img.shields.io/github/downloads/rex25415/GameOptimizer-Pro/total?style=flat-square&color=10b981&label=Downloads" alt="Total Downloads"/>
+  </a>
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-3b82f6?style=flat-square" alt="Platform"/>
+  <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-14b8a6?style=flat-square" alt="Zero Dependencies"/>
   <img src="https://img.shields.io/badge/Binary-~1.24%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
-  <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-win-x64.exe">
+    <img src="https://img.shields.io/badge/Download%20EXE-v1.40.0%20%C2%B7%201.24%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
+  </a>
+  &nbsp;
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
+    <img src="https://img.shields.io/badge/Releases-Portable%20ZIP%20%26%20SHA256-0ea5e9?style=for-the-badge" alt="All Release Assets"/>
+  </a>
+</p>
+
+<p align="center">
+  <sub><strong>普通玩家直接点击上方绿色按钮下载单文件 <code>.exe</code>，免安装双击即用（无需点击右上角绿色 <code>Code</code> 下载源码）</strong></sub>
+</p>
+
+<p align="center">
+  <a href="#为什么做它">为什么做它</a> ·
+  <a href="#界面预览">界面预览</a> ·
+  <a href="#核心功能模块">11 大模块</a> ·
+  <a href="#下载与上手">下载与上手</a> ·
+  <a href="#后端实测性能">后端实测</a> ·
+  <a href="#常见问题">常见问题</a> ·
+  <a href="CHANGELOG.md">更新日志</a>
 </p>
 
 <p align="center">
@@ -55,15 +86,15 @@
       <img src="docs/screenshots/05-graphics.png" alt="Graphics Multi-Monitor Canvas & GPU Telemetry"/>
     </td>
     <td width="50%">
-      <strong>01 态势总览 · 四维健康驾驶舱与 4 套光学主题</strong><br/>
-      <img src="docs/screenshots/01-overview.png" alt="Situation Overview"/>
+      <strong>09 基准测试 · 48 箱唤醒超调直方图与噪声判定</strong><br/>
+      <img src="docs/screenshots/09-bench.png" alt="Wake Overshoot 48-Bin Histogram & Noise-Floor Verdict"/>
     </td>
   </tr>
 </table>
 
 ---
 
-## 核心功能模块（11 页全覆盖）
+## 核心功能模块
 
 | # | 模块 | 核心能力 |
 |---|---|---|
@@ -81,16 +112,25 @@
 
 ---
 
-## 快捷下载与使用
+## 下载与上手
+
+### 3 步极速上手
+1. **下载运行**：直接下载下方单文件 `.exe`，双击即可在**普通用户权限**下查看完整硬件拓扑、四维体检与负优化残留扫描（零写入）。
+2. **按需调优**：确认需要写入 `HKLM` / 电源方案 / 服务时，点击窗口内「提权重启」即可；每项改动前自动记录原值到写前账本。
+3. **随时无损还原**：在 `10 还原中心` 可随时逐条回放原值，或长按「全部还原」一键回到接管前状态。
 
 ### 方式一：直接下载成品（推荐普通玩家）
 
-前往右侧 **[Releases](https://github.com/rex25415/GameOptimizer-Pro/releases)** 下载最新版：
-- `GameOptimizer-Pro-v1.40.0-win-x64.exe`：单文件绿色版，下载后直接双击即可运行。
-- `GameOptimizer-Pro-v1.40.0-portable.zip`：包含主程序与 `deploy.ps1` / `uninstall.ps1` 安装卸载脚本。
-- `SHA256SUMS.txt`：可核对可执行文件哈希。
+| 发行文件 | 适用场景 | 快捷入口 |
+|---|---|---|
+| **`GameOptimizer-Pro-v1.40.0-win-x64.exe`** | 单文件绿色版（`~1.24 MB`），无需安装，双击即跑 | [**直接下载 EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-win-x64.exe) |
+| **`GameOptimizer-Pro-v1.40.0-portable.zip`** | 完整便携包，附 `deploy.ps1` / `uninstall.ps1` 安装卸载脚本 | [**直接下载 ZIP**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-portable.zip) |
+| **`SHA256SUMS.txt`** | 发行包 SHA-256 哈希校验清单 | [**查看 Releases**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest) |
 
-> **关于 Windows SmartScreen 提示**：本软件为个人开源项目，未购买商业代码签名证书。首次运行系统可能弹出 SmartScreen 提醒，你可以点击「更多信息 → 仍要运行」，或者采用下方方式二直接从源码 1 秒本地自编译。
+> **如何核对文件哈希（PowerShell）**：
+> ```powershell
+> Get-FileHash .\GameOptimizer-Pro-v1.40.0-win-x64.exe -Algorithm SHA256
+> ```
 
 ### 方式二：零依赖从源码编译（Windows 10 / 11 自带环境即可）
 
@@ -105,16 +145,11 @@ cd GameOptimizer-Pro
 .\tools\uninstall.ps1       # 干净卸载（默认保留 ledger 账本，可加 -PurgeUserData 一并清除）
 ```
 
-### 权限与硬件自适应说明
-
-- 程序默认以**普通权限**启动，全部硬件探测与实时诊断立即可用；需要写入 `HKLM` / 电源方案 / 服务时，点击左下角状态行或顶栏「提权重启」按需提权即可。
-- 所有硬件信息（CPU 型号与核/簇/大小核拓扑、NVIDIA/AMD/Intel 显卡与多显示器、台式机/笔记本供电、电源计划、网卡与游戏库）全部于运行时通过原生 Windows API 自动探测。
-
 ---
 
-## 后端实测性能（Rev 140 · IRONCLAD KERNEL）
+## 后端实测性能
 
-Rev 140 将关键后端热路径全面收敛至零异常原生 Win32 API（`advapi32.dll RegGetValueW`、`OpenProcess` 单句柄亲和/判活/私有内存、持久化高水位非托管缓冲与共享进程表）：
+Rev 140（**IRONCLAD KERNEL**）将关键后端热路径全面收敛至零异常原生 Win32 API（`advapi32.dll RegGetValueW`、`OpenProcess` 单句柄亲和/判活/私有内存、持久化高水位非托管缓冲与共享进程表）：
 
 | 基准项 | 实测结果（`--backend-bench` / `--alloc-test`） | 说明 |
 |---|---|---|
@@ -139,24 +174,53 @@ Rev 140 将关键后端热路径全面收敛至零异常原生 Win32 API（`adva
 
 ---
 
-## 快捷键与数据位置
+## 常见问题
+
+<details>
+<summary><strong>1. 会不会被游戏反作弊（VAC / Vanguard / EAC / ACE / BattlEye）误判？</strong></summary>
+
+不会。GameOptimizer Pro 仅在用户态调用微软文档化的标准 Win32 API（注册表、电源策略、进程优先级/亲和性、系统遥测），**不注入任何 DLL、不读写游戏进程内存、不修改游戏文件、不加载任何内核驱动**。
+
+</details>
+
+<details>
+<summary><strong>2. 首次双击弹出 Windows SmartScreen「已保护你的电脑」怎么办？</strong></summary>
+
+本软件为个人开源项目，未购买昂贵的商业 EV 代码签名证书，因此全新发布的未签名 `.exe` 首次运行可能触发 SmartScreen 提示。你有两种完全透明的验证方式：
+1. 点击「更多信息 → 仍要运行」，并用 `Get-FileHash` 对照 `SHA256SUMS.txt`；
+2. 克隆源码后直接在 Windows 自带 PowerShell 里跑一行 `.\build.ps1`，**0.7 秒**从透明源码原地编出完全一致的单文件 `.exe`（无需装 Visual Studio 或任何 SDK）。
+
+</details>
+
+<details>
+<summary><strong>3. 调优之后如果不满意或想恢复系统默认，真的能完全还原吗？</strong></summary>
+
+可以。所有写操作均经过「写前原子账本」：写入前先将原值（包括键或值原本不存在的状态）原子落盘到 `%LOCALAPPDATA%\GameOptimizer\ledger\ledger.json`，落盘失败会直接中止修改。打开 `10 还原中心` 即可逐条或一键全部回放到修改前原值，且不会误伤你后续自己改过的其他系统设置。
+
+</details>
+
+<details>
+<summary><strong>4. 支持 AMD / Intel / NVIDIA / 核显独显双卡笔记本和多显示器吗？</strong></summary>
+
+全部支持，零机型硬编码。程序在启动时通过原生 Win32 / DXGI / GDI API 动态识别本机硬件：支持 AMD 多 CCD 簇、Intel 异构大小核、NVIDIA / AMD / Intel 单卡与笔记本双显卡（自动识别并去重 MUX/Optimus 双 LUID 与虚拟适配器）、任意多屏坐标与刷新率，以及台式机/笔记本 AC 供电状态。
+
+</details>
+
+---
+
+## 快捷键、数据位置与边界声明
 
 - **全局快捷键**：`Ctrl+K` 命令面板 · `Alt+← / Alt+→` 历史前进后退 · `Ctrl+1 ~ Ctrl+0` 直达前 10 页 · `Esc` 关闭浮层
 - **本地数据目录**（所有数据仅存本机，无任何联网遥测上报）：
   - `%LOCALAPPDATA%\GameOptimizer\ledger\ledger.json`：写前原子账本（原值记录）
   - `%LOCALAPPDATA%\GameOptimizer\ledger\audit-YYYYMM.log`：追加式审计日志
   - `%LOCALAPPDATA%\GameOptimizer\profiles.json`：游戏战术档案
-
----
-
-## 诚实边界声明
-
-- 本工具不测量游戏内 FPS（真实帧时间需要 PresentMon / ETW 级采集）；所有读数均为真实系统侧指标（唤醒抖动、DPC/ISR、定时器精度、PDH GPU 引擎、显存与网络吞吐），读不到一律显示 `—`，绝不伪造数值。
-- 风险 C 项需长按确认；需重启生效项明确标注；还原仅回放账本记录过的原值，不会误删用户后续自行调整的配置。
-- 详细演进记录与技术报告见 [CHANGELOG.md](CHANGELOG.md) 与 [REV140.md](REV140.md)。
+- **诚实边界声明**：
+  - 本工具不测量游戏内 FPS（真实帧时间需要 PresentMon / ETW 级采集）；所有读数均为真实系统侧指标，读不到一律显示 `—`，绝不伪造数值。
+  - 风险 C 项需长按确认；需重启生效项明确标注；详细演进记录与技术报告见 [CHANGELOG.md](CHANGELOG.md) 与 [REV140.md](REV140.md)。
 
 ---
 
 ## License
 
-本项目采用 [MIT License](LICENSE) 开源。
+本项目采用 [MIT License](LICENSE) 开源。遇到问题或有建议欢迎提交 [Issue](https://github.com/rex25415/GameOptimizer-Pro/issues/new/choose)。

@@ -10,11 +10,42 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-0ea5e9?style=flat-square" alt="Platform"/>
-  <img src="https://img.shields.io/badge/Runtime-.NET%20Framework%204.8%20(Built--in)-3b82f6?style=flat-square" alt="Runtime"/>
-  <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-10b981?style=flat-square" alt="Zero Dependencies"/>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
+    <img src="https://img.shields.io/github/v/release/rex25415/GameOptimizer-Pro?style=flat-square&color=0ea5e9&label=Release" alt="Latest Release"/>
+  </a>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases">
+    <img src="https://img.shields.io/github/downloads/rex25415/GameOptimizer-Pro/total?style=flat-square&color=10b981&label=Downloads" alt="Total Downloads"/>
+  </a>
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-3b82f6?style=flat-square" alt="Platform"/>
+  <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-14b8a6?style=flat-square" alt="Zero Dependencies"/>
   <img src="https://img.shields.io/badge/Binary-~1.24%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
-  <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-win-x64.exe">
+    <img src="https://img.shields.io/badge/Download%20EXE-v1.40.0%20%C2%B7%201.24%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
+  </a>
+  &nbsp;
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
+    <img src="https://img.shields.io/badge/Releases-Portable%20ZIP%20%26%20SHA256-0ea5e9?style=for-the-badge" alt="All Release Assets"/>
+  </a>
+</p>
+
+<p align="center">
+  <sub><strong>Looking to run it right away? Click the green button above for the standalone <code>.exe</code> — no need to use the green <code>Code</code> source ZIP.</strong></sub>
+</p>
+
+<p align="center">
+  <a href="#why-gameoptimizer-pro">Why</a> ·
+  <a href="#visual-tour">Visual Tour</a> ·
+  <a href="#built-in-modules">11 Modules</a> ·
+  <a href="#download-and-quick-start">Download & Build</a> ·
+  <a href="#measured-performance">Benchmarks</a> ·
+  <a href="#faq">FAQ</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
 </p>
 
 <p align="center">
@@ -23,7 +54,7 @@
 
 ---
 
-## Why GameOptimizer Pro?
+## Why GameOptimizer Pro
 
 Most "one-click Windows gaming optimizer" scripts silently overwrite registry keys with harmful non-defaults (disabling MPO, locking short fixed quantums, disabling SysMain, forcing global 0.5 ms timers) with **no safe rollback**.
 
@@ -55,15 +86,15 @@ Most "one-click Windows gaming optimizer" scripts silently overwrite registry ke
       <img src="docs/screenshots/05-graphics.png" alt="Graphics Multi-Monitor Canvas & GPU Telemetry"/>
     </td>
     <td width="50%">
-      <strong>01 Overview · 4-Axis Health Cockpit & 4 Optical Themes</strong><br/>
-      <img src="docs/screenshots/01-overview.png" alt="Situation Overview"/>
+      <strong>09 Benchmark · 48-Bin Wake Histogram & Noise Verdict</strong><br/>
+      <img src="docs/screenshots/09-bench.png" alt="Wake Overshoot 48-Bin Histogram & Noise-Floor Verdict"/>
     </td>
   </tr>
 </table>
 
 ---
 
-## 11 Built-In Modules
+## Built-In Modules
 
 1. **01 Overview**: 4-axis real-time health scoring (Scheduling / CPU / Memory / Tuning coverage), `ArcGauge 3.0`, 5 Hz Fritsch-Carlson monotonic cubic wake-jitter waveform, per-core CCD heatmap, and quick controls.
 2. **02 Tuning Matrix**: 30 documented Windows 10/11 tweaks (Registry, field-level `RegKv` for `DirectXUserGlobalSettings`, native `powrprof.dll` AC power indices, services), 3 tactical presets, live search, and a sticky **Tactical Inspector** showing `Current → Target` diff, atomic paths, and engineering rationale.
@@ -79,15 +110,24 @@ Most "one-click Windows gaming optimizer" scripts silently overwrite registry ke
 
 ---
 
-## Download or Build in 1 Second
+## Download and Quick Start
 
-### Option 1: Pre-built Single EXE
-Download from **[GitHub Releases](https://github.com/rex25415/GameOptimizer-Pro/releases)**:
-- `GameOptimizer-Pro-v1.40.0-win-x64.exe` — standalone portable executable (`~1.24 MB`).
-- `GameOptimizer-Pro-v1.40.0-portable.zip` — includes `deploy.ps1` & `uninstall.ps1` for desktop shortcut & Windows Uninstall registration.
-- `SHA256SUMS.txt` — SHA-256 verification checksums.
+### 3-Step Quick Start
+1. **Run Read-Only First**: Download the standalone `.exe` and launch it as a **standard user** to inspect hardware topology, 4-axis health diagnostics, and third-party leftover tweaks with zero writes.
+2. **Elevate On Demand**: Click "Restart Elevated" inside the console only when applying HKLM / power policy / service tweaks — every original value is journaled atomically beforehand.
+3. **Revert Anytime**: Open **10 Restore Center** to undo any item individually or hold **Revert All** to restore your exact pre-takeover system state.
 
-> **Note on Windows SmartScreen**: As an unsigned open-source binary, Windows SmartScreen may warn on first launch. You can verify `SHA256SUMS.txt` or compile directly from source in under 1 second below.
+### Option 1: Pre-Built Binaries
+
+| Asset | Best For | Link |
+|---|---|---|
+| **`GameOptimizer-Pro-v1.40.0-win-x64.exe`** | Standalone single-file executable (`~1.24 MB`), double-click to run | [**Download EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-win-x64.exe) |
+| **`GameOptimizer-Pro-v1.40.0-portable.zip`** | Portable bundle including `deploy.ps1` & `uninstall.ps1` | [**Download ZIP**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.40.0/GameOptimizer-Pro-v1.40.0-portable.zip) |
+| **`SHA256SUMS.txt`** | SHA-256 verification checksums | [**Latest Release**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest) |
+
+```powershell
+Get-FileHash .\GameOptimizer-Pro-v1.40.0-win-x64.exe -Algorithm SHA256
+```
 
 ### Option 2: Zero-Dependency Build from Source (Windows 10 / 11)
 No Visual Studio or .NET SDK needed:
@@ -103,13 +143,47 @@ cd GameOptimizer-Pro
 
 ---
 
-## Measured Backend Performance (Rev 140 · IRONCLAD KERNEL)
+## Measured Performance
+
+Rev 140 (**IRONCLAD KERNEL**) moves hot paths onto zero-exception native Win32 APIs:
 
 - **Native `advapi32.dll RegGetValueW`**: `P50 17.0 µs` hit / `15.5 µs` miss with **zero CLR `IOException`** on absent keys.
 - **Zero `Process.GetProcessById` full-table scans**: Native single-handle affinity read **`2.7 µs`**, cached physical-core mask **`0.0 µs`**, liveness + PID-reuse guard **`2.3 µs`**, private bytes **`2.4 µs`** (vs `~13.8 ms` managed full-table scan).
 - **Active TCP PID aggregation (`net.tcp.pid`)**: Persistent high-water buffer + short-TTL PID name cache **`P50 1.82 ms`** (10.9× faster) + parallel LAN/WAN dual-path probe.
 - **Zero-alloc vector visuals**: `Waveform 41 B/frame`, `MemRibbon 0 B/frame`, `PerfSampler 0 B/tick`, zero `DropShadowEffect` offscreen shadow surfaces.
 - **6 Built-In Verification Suites**: `--selftest` (`113/0`), `--uitest` (`84/0`), `--alloc-test` (`11/0`), `--stress-test` (`8/0`), `--backend-bench` (`fail=0`), `--daemon-test`.
+
+---
+
+## FAQ
+
+<details>
+<summary><strong>1. Is this safe with anti-cheat (VAC / Vanguard / EAC / ACE / BattlEye)?</strong></summary>
+
+Yes. GameOptimizer Pro uses only documented user-mode Win32 APIs (Registry, power policies, process priority/affinity, read-only system telemetry). It **never injects DLLs, never reads/writes game memory, never modifies game files, and never installs kernel drivers**.
+
+</details>
+
+<details>
+<summary><strong>2. Why does Windows SmartScreen warn on first launch?</strong></summary>
+
+As an independent open-source project without a paid commercial EV code-signing certificate, Windows SmartScreen may warn on a newly published unsigned binary. You can verify the hash against `SHA256SUMS.txt` or compile your own identical `.exe` directly from source in ~0.7 seconds with `.\build.ps1` using only built-in Windows tools.
+
+</details>
+
+<details>
+<summary><strong>3. Can every change really be reverted cleanly?</strong></summary>
+
+Yes. Every write goes through the atomic write-ahead ledger (`%LOCALAPPDATA%\GameOptimizer\ledger\ledger.json`), recording the exact pre-change state (including "did not exist") before touching Windows. You can revert individual items or hold **Revert All** in **10 Restore Center** without touching unrelated user changes.
+
+</details>
+
+<details>
+<summary><strong>4. Does it auto-detect AMD, Intel, NVIDIA, hybrid laptops, and multi-monitor setups?</strong></summary>
+
+Yes — zero hardcoded hardware profiles. CPU clusters (AMD CCDs / Intel hybrid P+E cores), DXGI multi-GPU LUIDs (with MUX/Optimus deduplication), virtual display coordinates/refresh rates, AC/battery power state, NIC/TUN interfaces, and game libraries are all auto-detected dynamically at runtime.
+
+</details>
 
 ---
 
@@ -121,4 +195,4 @@ cd GameOptimizer-Pro
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Released under the [MIT License](LICENSE). Found a bug or have an idea? Open an [Issue](https://github.com/rex25415/GameOptimizer-Pro/issues/new/choose).
