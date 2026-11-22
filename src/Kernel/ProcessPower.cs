@@ -105,7 +105,10 @@ namespace Go
             string n = procName.Trim();
             if (n.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 n = n.Substring(0, n.Length - 4);
-            return n.Length > 0 && ProtectedBackgroundNames.Contains(n);
+            if (n.Length == 0) return false;
+            // 兼容官方发布文件名（如 GameOptimizer-Pro-win-x64.exe）直接便携运行时的自保护
+            if (n.StartsWith("gameoptimizer", StringComparison.OrdinalIgnoreCase)) return true;
+            return ProtectedBackgroundNames.Contains(n);
         }
 
         public static int TrackedCount

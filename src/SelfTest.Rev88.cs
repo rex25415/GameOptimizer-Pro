@@ -606,11 +606,13 @@ namespace Go
                   "原生电源子项 Rev100：powrprof 直读与 Ops.Probe 一致且 ReadOnlyMode 拦截写入",
                   "read=" + acReadOk + " val=0x" + acMinCores.ToString("X") + " probe=" + probeHex + " blocked=" + acWriteBlocked);
 
-            int selfPid = Process.GetCurrentProcess().Id;
-            int[] found = Go.Daemon.ProcessScan.FindPidsByName("GameOptimizer");
+            Process selfProc = Process.GetCurrentProcess();
+            int selfPid = selfProc.Id;
+            string selfProcName = selfProc.ProcessName;
+            int[] found = Go.Daemon.ProcessScan.FindPidsByName(selfProcName);
             bool foundSelf = Array.IndexOf(found, selfPid) >= 0;
             Check(foundSelf, "零句柄查进程 Rev100：ProcessScan.FindPidsByName 命中自身 PID",
-                  "self=" + selfPid + " hits=" + found.Length);
+                  "self=" + selfPid + " name=" + selfProcName + " hits=" + found.Length);
         }
 
         private static ProcEntry FindEntry(ProcSnapshot s, int pid)

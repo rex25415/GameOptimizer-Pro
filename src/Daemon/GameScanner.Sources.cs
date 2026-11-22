@@ -56,7 +56,7 @@ namespace Go.Daemon
 
         private static readonly string[] NonGameSubstrings =
         {
-            "cc switch", "cc-switch", "ccswitch", "cherry studio", "cherry-studio", "cherrystudio",
+            "gameoptimizer", "cc switch", "cc-switch", "ccswitch", "cherry studio", "cherry-studio", "cherrystudio",
             "google docs", "google drive", "google sheets", "google slides", "google meet",
             "google calendar", "antigravity", "workbuddy", "deepseek", "multisim", "mumu",
             "legionzone", "legion toolkit", "github desktop", "vs code", "vscode",

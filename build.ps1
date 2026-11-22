@@ -60,6 +60,8 @@ $icon     = Join-Path $root 'assets\app.ico'
 # 并同时支持含空格/中文路径与无上限源文件列表。
 $rspLines = New-Object System.Collections.Generic.List[string]
 $rspLines.Add('/nologo')
+$rspLines.Add('/utf8output')
+$rspLines.Add('/codepage:65001')
 $rspLines.Add('/target:winexe')
 $rspLines.Add('/platform:anycpu')
 $rspLines.Add('/optimize+')
@@ -88,6 +90,8 @@ $psi.Arguments = '@"' + $rsp + '"'
 $psi.UseShellExecute = $false
 $psi.RedirectStandardOutput = $true
 $psi.RedirectStandardError = $true
+$psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+$psi.StandardErrorEncoding = [System.Text.Encoding]::UTF8
 $psi.CreateNoWindow = $true
 
 $sw = [Diagnostics.Stopwatch]::StartNew()

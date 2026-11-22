@@ -619,24 +619,37 @@ namespace Go
 
         private static void StopOtherInstances()
         {
-            int selfPid = Process.GetCurrentProcess().Id;
-            Process[] list = null;
-            try { list = Process.GetProcessesByName("GameOptimizer"); }
-            catch { return; }
-            if (list == null) return;
+            Process self = Process.GetCurrentProcess();
+            int selfPid = self.Id;
+            string selfName = self.ProcessName ?? "";
 
+            List<string> targetNames = new List<string>();
+            targetNames.Add("GameOptimizer");
+            if (selfName.Length > 0 && !string.Equals(selfName, "GameOptimizer", StringComparison.OrdinalIgnoreCase))
+                targetNames.Add(selfName);
+
+            HashSet<int> seen = new HashSet<int>();
+            seen.Add(selfPid);
             List<Process> others = new List<Process>();
-            for (int i = 0; i < list.Length; i++)
+            for (int n = 0; n < targetNames.Count; n++)
             {
-                Process p = list[i];
-                try
+                Process[] list = null;
+                try { list = Process.GetProcessesByName(targetNames[n]); }
+                catch { continue; }
+                if (list == null) continue;
+
+                for (int i = 0; i < list.Length; i++)
                 {
-                    if (p.Id == selfPid) { p.Dispose(); continue; }
-                    try { p.CloseMainWindow(); }
-                    catch { }
-                    others.Add(p);
+                    Process p = list[i];
+                    try
+                    {
+                        if (!seen.Add(p.Id)) { p.Dispose(); continue; }
+                        try { p.CloseMainWindow(); }
+                        catch { }
+                        others.Add(p);
+                    }
+                    catch { try { p.Dispose(); } catch { } }
                 }
-                catch { try { p.Dispose(); } catch { } }
             }
 
             if (others.Count == 0) return;
