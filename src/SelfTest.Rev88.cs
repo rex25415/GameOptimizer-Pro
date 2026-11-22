@@ -119,12 +119,19 @@ namespace Go
 
                 uint p0 = ProcessPower.ReadPriority(pid);
                 string err;
+                // 子进程会继承父进程（例如 CI runner / 任务计划）的初始优先级类（可能为 BelowNormal 0x4000）；
+                // 仅当继承值碰巧已是 AboveNormal 时先不追踪地切回 Normal，随后验证“改写 -> 严格还原回真实原值 p0”。
+                if (p0 == ProcessPower.PriorityAboveNormal)
+                {
+                    ProcessPower.SetPriority(pid, ProcessPower.PriorityNormal, false, out err);
+                    p0 = ProcessPower.ReadPriority(pid);
+                }
                 bool setPrioOk = ProcessPower.SetPriority(pid, ProcessPower.PriorityAboveNormal, true, out err);
                 uint p1 = ProcessPower.ReadPriority(pid);
                 bool ecoSetOk = ProcessPower.SetEcoQoS(pid, true, true, out err);
                 bool ecoState;
                 bool ecoKnown = ProcessPower.ReadEcoQoS(pid, out ecoState);
-                Check(p0 == ProcessPower.PriorityNormal && setPrioOk && p1 == ProcessPower.PriorityAboveNormal,
+                Check(p0 != 0 && p0 != ProcessPower.PriorityAboveNormal && setPrioOk && p1 == ProcessPower.PriorityAboveNormal,
                       "进程能效 Rev88：SetPriority 写入并回读校验",
                       "before=0x" + p0.ToString("X") + " after=0x" + p1.ToString("X") + " tracked=" + ProcessPower.TrackedCount);
                 Check(ecoSetOk && ecoKnown && ecoState,
@@ -155,9 +162,9 @@ namespace Go
                 uint pReverted = ProcessPower.ReadPriority(pid);
                 bool ecoReverted = true;
                 ProcessPower.ReadEcoQoS(pid, out ecoReverted);
-                Check(reverted >= 1 && pReverted == ProcessPower.PriorityNormal && !ecoReverted && ProcessPower.TrackedCount == 0,
+                Check(reverted >= 1 && pReverted == p0 && !ecoReverted && ProcessPower.TrackedCount == 0,
                       "进程能效 Rev88：RevertTracked 严格还原优先级与 EcoQoS 并清空追踪",
-                      "reverted=" + reverted + " prio=0x" + pReverted.ToString("X") + " eco=" + ecoReverted);
+                      "reverted=" + reverted + " prio=0x" + pReverted.ToString("X") + " expect=0x" + p0.ToString("X") + " eco=" + ecoReverted);
             }
             finally
             {
