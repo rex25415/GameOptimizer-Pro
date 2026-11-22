@@ -33,7 +33,7 @@ New-Item -ItemType Directory -Force -Path $stage | Out-Null
 $stageExe = Join-Path $stage 'GameOptimizer.exe'
 Remove-Item $stageExe -Force -ErrorAction SilentlyContinue
 
-$refs = @(
+$refPaths = @(
     (Join-Path $wpf 'PresentationFramework.dll'),
     (Join-Path $wpf 'PresentationCore.dll'),
     (Join-Path $wpf 'WindowsBase.dll'),
@@ -47,35 +47,65 @@ $refs = @(
     (Join-Path $fw  'System.Runtime.Serialization.dll'),
     (Join-Path $fw  'System.Web.Extensions.dll'),
     (Join-Path $fw  'System.Core.dll')
-) | ForEach-Object { '/r:' + $_ }
+)
 
-$sources = Get-ChildItem -Path $src -Recurse -Filter *.cs -File |
-           Sort-Object FullName |
-           ForEach-Object { '"' + $_.FullName + '"' }
-
-if (-not $sources) { throw '源代码为空' }
+$sourceFiles = @(Get-ChildItem -Path $src -Recurse -Filter *.cs -File | Sort-Object FullName)
+if ($sourceFiles.Count -eq 0) { throw '源代码为空' }
 
 $manifest = Join-Path $src 'app.manifest'
 $icon     = Join-Path $root 'assets\app.ico'
 
-$cscArgs = @(
-    '/nologo','/target:winexe','/platform:anycpu','/optimize+','/unsafe-',
-    ('/out:"' + $stageExe + '"'),
-    ('/win32manifest:"' + $manifest + '"'),
-    '/r:System.dll'
-) + $refs
+# 使用响应文件（UTF-8 BOM）+ ProcessStartInfo 调用 csc.exe：
+# 彻底消除 PowerShell 5.1 与 PowerShell 7 (pwsh) 原生参数引号转义差异，
+# 并同时支持含空格/中文路径与无上限源文件列表。
+$rspLines = New-Object System.Collections.Generic.List[string]
+$rspLines.Add('/nologo')
+$rspLines.Add('/target:winexe')
+$rspLines.Add('/platform:anycpu')
+$rspLines.Add('/optimize+')
+$rspLines.Add('/unsafe-')
+$rspLines.Add('/out:"' + $stageExe + '"')
+$rspLines.Add('/win32manifest:"' + $manifest + '"')
+$rspLines.Add('/r:System.dll')
+foreach ($r in $refPaths) {
+    $rspLines.Add('/r:"' + $r + '"')
+}
 if (Test-Path $icon) {
-    $cscArgs += ('/win32icon:"' + $icon + '"')
-    $cscArgs += ('/resource:"' + $icon + '",GameOptimizer.ico')
+    $rspLines.Add('/win32icon:"' + $icon + '"')
+    $rspLines.Add('/resource:"' + $icon + '",GameOptimizer.ico')
+}
+foreach ($s in $sourceFiles) {
+    $rspLines.Add('"' + $s.FullName + '"')
 }
 
-$sw = [Diagnostics.Stopwatch]::StartNew()
-$log = & $csc $cscArgs $sources 2>&1 | Out-String
-$sw.Stop()
+$rsp = Join-Path $stage 'build.rsp'
+$utf8Bom = New-Object System.Text.UTF8Encoding $true
+[System.IO.File]::WriteAllLines($rsp, $rspLines.ToArray(), $utf8Bom)
 
-if ($LASTEXITCODE -ne 0) {
+$psi = New-Object System.Diagnostics.ProcessStartInfo
+$psi.FileName = $csc
+$psi.Arguments = '@"' + $rsp + '"'
+$psi.UseShellExecute = $false
+$psi.RedirectStandardOutput = $true
+$psi.RedirectStandardError = $true
+$psi.CreateNoWindow = $true
+
+$sw = [Diagnostics.Stopwatch]::StartNew()
+$proc = New-Object System.Diagnostics.Process
+$proc.StartInfo = $psi
+[void]$proc.Start()
+$errTask = $proc.StandardError.ReadToEndAsync()
+$stdOut  = $proc.StandardOutput.ReadToEnd()
+$proc.WaitForExit()
+$stdErr  = $errTask.GetAwaiter().GetResult()
+$cscExit = $proc.ExitCode
+$proc.Dispose()
+$sw.Stop()
+$log = $stdOut + $stdErr
+
+if ($cscExit -ne 0) {
     Write-Host $log -ForegroundColor Red
-    throw ('编译失败 exit=' + $LASTEXITCODE)
+    throw ('编译失败 exit=' + $cscExit)
 }
 if ($log.Trim()) { Write-Host $log -ForegroundColor Yellow }
 
