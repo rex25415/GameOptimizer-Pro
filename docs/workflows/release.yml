@@ -68,14 +68,16 @@ jobs:
           git push origin refs/tags/latest --force
 
           $title = "GameOptimizer Pro (Latest · Rev $rev)"
-          $notes = @"
-> **唯一成品下载 / Single Unified Download**：点击下方 **Assets** 中的 [\`GameOptimizer-Pro-win-x64.exe\`](https://github.com/$($env:GITHUB_REPOSITORY)/releases/latest/download/GameOptimizer-Pro-win-x64.exe) 下载双击即可运行（内置自选桌面/开始菜单快捷方式、SHA-256 热更新与原生深色卸载）。
-
-- **Revision**: \`Rev $rev\`
-- **Built by**: GitHub Actions (\`windows-latest\`, commit \`$($env:GITHUB_SHA.Substring(0,7))\`)
-- **SHA-256**: \`$sha\`
-- **Changelog**: See [CHANGELOG.md](https://github.com/$($env:GITHUB_REPOSITORY)/blob/main/CHANGELOG.md)
-"@
+          $shortSha = $env:GITHUB_SHA.Substring(0, 7)
+          $repo = $env:GITHUB_REPOSITORY
+          $notes = @(
+            "> **唯一成品下载 / Single Unified Download**：点击下方 **Assets** 中的 [``GameOptimizer-Pro-win-x64.exe``](https://github.com/$repo/releases/latest/download/GameOptimizer-Pro-win-x64.exe) 下载双击即可运行（内置自选桌面/开始菜单快捷方式、SHA-256 热更新与原生深色卸载）。",
+            "",
+            "- **Revision**: ``Rev $rev``",
+            "- **Built by**: GitHub Actions (``windows-latest``, commit ``$shortSha``)",
+            "- **SHA-256**: ``$sha``",
+            "- **Changelog**: See [CHANGELOG.md](https://github.com/$repo/blob/main/CHANGELOG.md)"
+          ) -join "`n"
           $notes | Set-Content -Path .\release-out\notes.md -Encoding UTF8
 
           $exists = $false
