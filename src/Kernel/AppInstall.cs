@@ -771,6 +771,48 @@ namespace Go
             }
         }
 
+        /// <summary>无缝交接重启至指定 exe（传入 --wait-pid 让新实例等旧实例放锁退出后再启动）。</summary>
+        public static bool LaunchHandoff(string targetExe, bool preserveElevation)
+        {
+            if (string.IsNullOrEmpty(targetExe) || !File.Exists(targetExe)) return false;
+            try
+            {
+                int pid = Process.GetCurrentProcess().Id;
+                ProcessStartInfo psi = new ProcessStartInfo(targetExe);
+                psi.UseShellExecute = true;
+                psi.WorkingDirectory = Path.GetDirectoryName(targetExe);
+                psi.Arguments = (preserveElevation ? "--elevated " : "") + "--wait-pid " + pid;
+                if (preserveElevation) psi.Verb = "runas";
+                Process.Start(psi);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Diag.Fail("install.handoff", ex);
+                return false;
+            }
+        }
+
+        /// <summary>启动后在后台清理前一次热更新或热替换遗留的 .prev.* 旧映像（零冷启动开销）。</summary>
+        public static void CleanStalePrevBackground()
+        {
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                try
+                {
+                    CleanStaleFiles(DefaultInstallDir());
+                    string cur = CurrentExePath();
+                    if (!string.IsNullOrEmpty(cur))
+                    {
+                        string dir = Path.GetDirectoryName(cur);
+                        if (!string.IsNullOrEmpty(dir) && !PathEquals(dir, DefaultInstallDir()))
+                            CleanStaleFiles(dir);
+                    }
+                }
+                catch { }
+            });
+        }
+
         private static void CleanStaleFiles(string installDir)
         {
             try

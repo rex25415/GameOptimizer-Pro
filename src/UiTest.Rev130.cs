@@ -246,10 +246,15 @@ namespace Go
                 }
             }
 
+            shell.TestPalette("脱敏硬件环境摘要");
+            Pump(60);
+            bool palSummaryHit = shell.PaletteResultCount > 0 && shell.PaletteFirstTitle.IndexOf("摘要", StringComparison.Ordinal) >= 0;
+            shell.HidePalette();
+
             shell.TestSetInstallStatus(AppInstall.Probe(), true);
-            Check(showOnPortable && hideOnSource && hideOnDismiss && palUninstallHit && dlgDefaultsOk && dlgLayoutOk,
-                  "Rev142 一体化安装/卸载窗口：便携引导、默认不强塞开始菜单、Ctrl+K 卸载入口与双模布局全绿",
-                  "portable=" + showOnPortable + " srcQuiet=" + hideOnSource + " dismiss=" + hideOnDismiss + " pal=" + palUninstallHit + " def=" + dlgDefaultsOk + " dlg=" + dlgLayoutOk);
+            Check(showOnPortable && hideOnSource && hideOnDismiss && palUninstallHit && palSummaryHit && dlgDefaultsOk && dlgLayoutOk,
+                  "Rev142/143 一体化安装/更新/卸载窗口：便携引导、默认不强塞开始菜单、Ctrl+K 卸载与摘要入口及双模布局全绿",
+                  "portable=" + showOnPortable + " srcQuiet=" + hideOnSource + " dismiss=" + hideOnDismiss + " pal=" + (palUninstallHit && palSummaryHit) + " def=" + dlgDefaultsOk + " dlg=" + dlgLayoutOk);
         }
     }
 }

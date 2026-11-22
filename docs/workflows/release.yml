@@ -1,0 +1,88 @@
+# ============================================================================
+# GameOptimizer Pro — GitHub Actions Official Cloud Build & Rolling Latest Release
+#
+# 启用方式：在 GitHub 网页端将本文件复制/新建为 `.github/workflows/release.yml`
+# 启用后，每次推送代码到 main 或在 Actions 页手动触发，都会由 GitHub 官方
+# Windows 服务器直接从公开源码编译、跑通 --selftest 并自动更新唯一的 `latest` Release。
+# ============================================================================
+name: Build & Update Rolling Latest Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'build.ps1'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile zero-dependency single EXE
+        shell: pwsh
+        run: |
+          .\build.ps1
+          $exe = Resolve-Path .\out\GameOptimizer.exe
+          Write-Host "Built: $exe ($((Get-Item $exe).Length) bytes)"
+
+      - name: Run headless backend self-test (--selftest)
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath .\out\GameOptimizer.exe -ArgumentList "--selftest", "selftest.txt" -PassThru -Wait
+          Get-Content .\selftest.txt
+          if ($p.ExitCode -ne 0) { throw "selftest failed with exit code $($p.ExitCode)" }
+
+      - name: Extract Rev & prepare rolling release assets
+        id: meta
+        shell: pwsh
+        run: |
+          $brand = Get-Content .\src\Brand.cs -Raw
+          if ($brand -match 'Rev\s*=\s*(\d+)') { $rev = $Matches[1] } else { $rev = '0' }
+          New-Item -ItemType Directory -Force -Path .\release-out | Out-Null
+          $dst = '.\release-out\GameOptimizer-Pro-win-x64.exe'
+          Copy-Item -Force .\out\GameOptimizer.exe $dst
+          $sha = (Get-FileHash $dst -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$sha  GameOptimizer-Pro-win-x64.exe`r`n" | Set-Content -Path .\release-out\SHA256SUMS.txt -NoNewline -Encoding UTF8
+          "rev=$rev" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "sha=$sha" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Update rolling 'latest' tag & GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: pwsh
+        run: |
+          $rev = '${{ steps.meta.outputs.rev }}'
+          $sha = '${{ steps.meta.outputs.sha }}'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f latest HEAD
+          git push origin refs/tags/latest --force
+
+          $title = "GameOptimizer Pro (Latest · Rev $rev)"
+          $notes = @"
+> **唯一成品下载 / Single Unified Download**：点击下方 **Assets** 中的 [\`GameOptimizer-Pro-win-x64.exe\`](https://github.com/$($env:GITHUB_REPOSITORY)/releases/latest/download/GameOptimizer-Pro-win-x64.exe) 下载双击即可运行（内置自选桌面/开始菜单快捷方式、SHA-256 热更新与原生深色卸载）。
+
+- **Revision**: \`Rev $rev\`
+- **Built by**: GitHub Actions (\`windows-latest\`, commit \`$($env:GITHUB_SHA.Substring(0,7))\`)
+- **SHA-256**: \`$sha\`
+- **Changelog**: See [CHANGELOG.md](https://github.com/$($env:GITHUB_REPOSITORY)/blob/main/CHANGELOG.md)
+"@
+          $notes | Set-Content -Path .\release-out\notes.md -Encoding UTF8
+
+          $exists = $false
+          try { gh release view latest --repo $env:GITHUB_REPOSITORY 2>$null | Out-Null; if ($LASTEXITCODE -eq 0) { $exists = $true } } catch { }
+          if ($exists) {
+            gh release edit latest --repo $env:GITHUB_REPOSITORY --title $title --notes-file .\release-out\notes.md --latest
+            gh release upload latest .\release-out\GameOptimizer-Pro-win-x64.exe .\release-out\SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --clobber
+          } else {
+            gh release create latest .\release-out\GameOptimizer-Pro-win-x64.exe .\release-out\SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --target main --latest --title $title --notes-file .\release-out\notes.md
+          }

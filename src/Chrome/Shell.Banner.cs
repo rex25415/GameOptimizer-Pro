@@ -241,6 +241,24 @@ namespace Go
             }), DispatcherPriority.Background);
         }
 
+        /// <summary>安装到固定目录或热更新完成后，无缝交接重启至目标 exe，立即释放下载目录文件占用。</summary>
+        public bool BeginHandoffRestart(string targetExe)
+        {
+            if (string.IsNullOrEmpty(targetExe)) return false;
+            SaveState();
+            Program.ReleaseInstanceLock();
+            bool elevated = _core != null && _core.Elevated;
+            if (!AppInstall.LaunchHandoff(targetExe, elevated))
+                return false;
+            _relaunching = true;
+            Dispatcher.BeginInvoke(new Action(delegate
+            {
+                try { Application.Current.Shutdown(); }
+                catch (Exception ex) { Diag.Fail("shell.handoff.shutdown", ex); }
+            }), DispatcherPriority.Background);
+            return true;
+        }
+
         private void RefreshInstallChipColor()
         {
             if (_installChip == null) return;

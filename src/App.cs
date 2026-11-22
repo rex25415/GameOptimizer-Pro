@@ -411,6 +411,7 @@ namespace Go
             shell.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(delegate
             {
                 InstanceArbiter.ListenForShow(shell.Dispatcher, delegate { shell.Unpark(); });
+                AppInstall.CleanStalePrevBackground();
             }));
             ctx.TShow = boot.ElapsedMilliseconds;
             Boot.M("shown");

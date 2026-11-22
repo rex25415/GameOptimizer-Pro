@@ -6,36 +6,36 @@
 
 <p align="center">
   <strong>Windows 10 / 11 零依赖单文件游戏性能控制台 · 写前原子账本 · 逐项可还原 · 原生 Win32 实时遥测</strong><br/>
-  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 142)</em>
+  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 143)</em>
 </p>
 
 <p align="center">
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
-    <img src="https://img.shields.io/github/v/release/rex25415/GameOptimizer-Pro?style=flat-square&color=0ea5e9&label=Release" alt="Latest Release"/>
+    <img src="https://img.shields.io/badge/Channel-Rolling%20Latest%20(Rev%20143)-0ea5e9?style=flat-square" alt="Rolling Latest"/>
   </a>
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases">
     <img src="https://img.shields.io/github/downloads/rex25415/GameOptimizer-Pro/total?style=flat-square&color=10b981&label=Downloads" alt="Total Downloads"/>
   </a>
   <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-3b82f6?style=flat-square" alt="Platform"/>
   <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-14b8a6?style=flat-square" alt="Zero Dependencies"/>
-  <img src="https://img.shields.io/badge/Binary-~1.28%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
+  <img src="https://img.shields.io/badge/Binary-~1.30%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.42.0/GameOptimizer-Pro-v1.42.0-win-x64.exe">
-    <img src="https://img.shields.io/badge/Download%20EXE-v1.42.0%20%C2%B7%201.28%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest/download/GameOptimizer-Pro-win-x64.exe">
+    <img src="https://img.shields.io/badge/Download%20Latest-GameOptimizer--Pro--win--x64.exe-10b981?style=for-the-badge" alt="Download Latest EXE"/>
   </a>
   &nbsp;
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
-    <img src="https://img.shields.io/badge/Releases-Notes%20%26%20SHA256-0ea5e9?style=for-the-badge" alt="Release Notes & SHA256"/>
+    <img src="https://img.shields.io/badge/Releases-Changelog%20%26%20SHA256-0ea5e9?style=for-the-badge" alt="Release Notes & SHA256"/>
   </a>
 </p>
 
 <p align="center">
-  <sub><strong>只有一个单文件 <code>.exe</code>，不分版本、无需解压——双击即可运行，程序内置「安装/卸载」窗口可自由勾选桌面/开始菜单快捷方式与一键卸载（无需点右上角 <code>Code</code> 下载源码）</strong></sub>
+  <sub><strong>永远只有一个最新单文件 <code>.exe</code>，不分版本、无需解压——双击即可运行，内置自选快捷方式安装、SHA-256 热更新与原生深色卸载（无需点右上角 <code>Code</code> 下载源码）</strong></sub>
 </p>
 
 <p align="center">
@@ -115,20 +115,20 @@
 ## 下载与上手
 
 ### 3 步极速上手
-1. **下载双击即用**：只下载唯一的单文件 `.exe`，双击即可在**普通用户权限**下查看硬件拓扑、四维体检与负优化残留扫描（零写入）。
-2. **自由勾选快捷方式（全部由你决定）**：通过顶部轻提示、左下角 `安装/卸载`、`10 还原中心` 或 `Ctrl+K` 打开内置深色「应用安装与管理」窗口，按个人喜好自由勾选**桌面快捷方式**、**开始菜单入口**、**开机静默进托盘**（勾上即创建，取消即移除，绝不强塞）。
-3. **随时无损还原或内置卸载**：调优前自动记录原值至写前账本，可逐条或一键全部还原；若要卸载，直接在软件内（或 Windows「设置 → 已安装的应用」）点击卸载，自动检查未还原项并在退出后干净清空目录，零残留、无黑框。
+1. **下载双击即用**：永远只需下载唯一的 `GameOptimizer-Pro-win-x64.exe`，双击即可在**普通用户权限**下查看硬件拓扑、四维体检与负优化残留扫描（零写入）。
+2. **自由勾选快捷方式（安装后自动释放下载文件）**：在顶部提示、左下角 `安装/卸载`、`10 还原中心` 或 `Ctrl+K` 中打开「应用安装与管理」窗口，按喜好勾选**桌面快捷方式**、**开始菜单入口**、**开机静默进托盘**；安装后自动无缝重启交接至安装目录，可立即删除下载文件夹里的原文件。
+3. **内置热更新、还原与卸载**：默认零联网；随时可在同一窗口点击**「检查更新」**经 `SHA-256` 校验后一键热更新，或一键**复制脱敏硬件摘要**提交反馈；不想用时在软件内或 Windows「已安装的应用」直接卸载，退出自动清空目录零残留。
 
-### 直接下载（唯一成品文件）
+### 直接下载（唯一永久滚动最新版）
 
 | 发行文件 | 说明 | 快捷入口 |
 |---|---|---|
-| **`GameOptimizer-Pro-v1.42.0-win-x64.exe`** | 唯一单文件程序（`~1.28 MB`），双击即可运行，内置自选快捷方式安装与原生卸载 | [**直接下载 EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.42.0/GameOptimizer-Pro-v1.42.0-win-x64.exe) |
-| **`SHA256SUMS.txt`** | 发行包 SHA-256 哈希校验清单 | [**查看 Releases**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest) |
+| **`GameOptimizer-Pro-win-x64.exe`** | 唯一单文件最新版（`~1.30 MB`），内置自选快捷方式安装、SHA-256 热更新与原生卸载 | [**直接下载最新版 EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest/download/GameOptimizer-Pro-win-x64.exe) |
+| **`SHA256SUMS.txt`** | 发行包 SHA-256 哈希校验清单 | [**查看 Latest Release**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest) |
 
 > **如何核对文件哈希（PowerShell）**：
 > ```powershell
-> Get-FileHash .\GameOptimizer-Pro-v1.42.0-win-x64.exe -Algorithm SHA256
+> Get-FileHash .\GameOptimizer-Pro-win-x64.exe -Algorithm SHA256
 > ```
 
 ### 从源码 0.7 秒自编译（可选）
@@ -161,7 +161,7 @@ Rev 140（**IRONCLAD KERNEL**）将关键后端热路径全面收敛至零异常
 ### 内置 6 套自动化自检
 
 ```powershell
-.\out\GameOptimizer.exe --selftest selftest.txt          # 117 项后端原子事务、RegKv、并发、原生安装与 Win32 校验
+.\out\GameOptimizer.exe --selftest selftest.txt          # 120 项后端原子事务、RegKv、并发、原生安装/更新与 Win32 校验
 .\out\GameOptimizer.exe --uitest uitest.txt              # 85 项前端布局、交互、换肤、吸顶、引导与 11 页回归
 .\out\GameOptimizer.exe --alloc-test                     # 11 项图元与采样器零分配预算探针
 .\out\GameOptimizer.exe --stress-test                    # 8 项切页/换肤/面板泄漏与线程退出压测

@@ -6,36 +6,36 @@
 
 <p align="center">
   <strong>Zero-Dependency Single-File Windows 10/11 Game Performance Console · Write-Ahead Reversible Ledger · Native Win32 Telemetry</strong><br/>
-  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 142)</em>
+  <em>VANGUARD CONSOLE · IRONCLAD KERNEL (Rev 143)</em>
 </p>
 
 <p align="center">
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
-    <img src="https://img.shields.io/github/v/release/rex25415/GameOptimizer-Pro?style=flat-square&color=0ea5e9&label=Release" alt="Latest Release"/>
+    <img src="https://img.shields.io/badge/Channel-Rolling%20Latest%20(Rev%20143)-0ea5e9?style=flat-square" alt="Rolling Latest"/>
   </a>
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases">
     <img src="https://img.shields.io/github/downloads/rex25415/GameOptimizer-Pro/total?style=flat-square&color=10b981&label=Downloads" alt="Total Downloads"/>
   </a>
   <img src="https://img.shields.io/badge/Platform-Windows%2010%2F11%20x64-3b82f6?style=flat-square" alt="Platform"/>
   <img src="https://img.shields.io/badge/Dependencies-Zero%20External%20DLLs-14b8a6?style=flat-square" alt="Zero Dependencies"/>
-  <img src="https://img.shields.io/badge/Binary-~1.28%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
+  <img src="https://img.shields.io/badge/Binary-~1.30%20MB%20Single%20EXE-6366f1?style=flat-square" alt="Single EXE"/>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License"/>
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.42.0/GameOptimizer-Pro-v1.42.0-win-x64.exe">
-    <img src="https://img.shields.io/badge/Download%20EXE-v1.42.0%20%C2%B7%201.28%20MB-10b981?style=for-the-badge" alt="Download Single EXE"/>
+  <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest/download/GameOptimizer-Pro-win-x64.exe">
+    <img src="https://img.shields.io/badge/Download%20Latest-GameOptimizer--Pro--win--x64.exe-10b981?style=for-the-badge" alt="Download Latest EXE"/>
   </a>
   &nbsp;
   <a href="https://github.com/rex25415/GameOptimizer-Pro/releases/latest">
-    <img src="https://img.shields.io/badge/Releases-Notes%20%26%20SHA256-0ea5e9?style=for-the-badge" alt="Release Notes & SHA256"/>
+    <img src="https://img.shields.io/badge/Releases-Changelog%20%26%20SHA256-0ea5e9?style=for-the-badge" alt="Release Notes & SHA256"/>
   </a>
 </p>
 
 <p align="center">
-  <sub><strong>One single <code>.exe</code> for everyone — double-click to run, with built-in customizable Desktop/Start Menu shortcut toggles and native in-app uninstaller.</strong></sub>
+  <sub><strong>Always one single latest <code>.exe</code> — double-click to run, with customizable Desktop/Start Menu shortcut setup, manual SHA-256 verified hot-update, and native dark uninstaller.</strong></sub>
 </p>
 
 <p align="center">
@@ -113,19 +113,19 @@ Most "one-click Windows gaming optimizer" scripts silently overwrite registry ke
 ## Download and Quick Start
 
 ### 3-Step Quick Start
-1. **Run Read-Only First**: Download the single `.exe` and double-click to launch as a **standard user** — inspect hardware topology, 4-axis health diagnostics, and third-party leftover tweaks with zero writes.
-2. **Choose Your Own Shortcuts**: Open the built-in dark **Install / Manage** dialog (from the first-run banner, bottom-left rail, **10 Restore Center**, or `Ctrl+K`) to toggle **Desktop shortcut**, **Start Menu entry**, or **Tray Autostart** on/off whenever you like.
-3. **Revert Anytime or Uninstall Cleanly**: Every tweak is journaled before write; undo individually or all at once in **10 Restore Center**, or uninstall directly from inside the app or Windows **Settings → Installed Apps** (`--uninstall`) with automatic ledger check and zero leftovers.
+1. **Run Read-Only First**: Always download the single `GameOptimizer-Pro-win-x64.exe` and double-click to launch as a **standard user** — inspect hardware topology, 4-axis health diagnostics, and third-party leftover tweaks with zero writes.
+2. **Choose Your Own Shortcuts**: Open the built-in dark **Install / Manage** dialog (from the first-run banner, bottom-left rail, **10 Restore Center**, or `Ctrl+K`) to toggle **Desktop shortcut**, **Start Menu entry**, or **Tray Autostart**; installing automatically hands off to the installed binary so you can immediately delete the downloaded copy.
+3. **Hot-Update, Revert, or Uninstall Cleanly**: Zero background network calls; click **Check for Updates** anytime for SHA-256 verified 1-click hot-update, copy a privacy-scrubbed hardware summary for Issues, or uninstall natively from inside the app or Windows **Settings → Installed Apps** (`--uninstall`).
 
-### Direct Download (Single Unified Binary)
+### Direct Download (Single Rolling Latest Binary)
 
 | Asset | Description | Link |
 |---|---|---|
-| **`GameOptimizer-Pro-v1.42.0-win-x64.exe`** | Single self-contained executable (`~1.28 MB`) with built-in customizable shortcut setup & native uninstaller | [**Download EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/download/v1.42.0/GameOptimizer-Pro-v1.42.0-win-x64.exe) |
+| **`GameOptimizer-Pro-win-x64.exe`** | Always-latest single self-contained executable (`~1.30 MB`) with customizable shortcut setup, SHA-256 hot-update & native uninstaller | [**Download Latest EXE**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest/download/GameOptimizer-Pro-win-x64.exe) |
 | **`SHA256SUMS.txt`** | SHA-256 verification checksum | [**Latest Release**](https://github.com/rex25415/GameOptimizer-Pro/releases/latest) |
 
 ```powershell
-Get-FileHash .\GameOptimizer-Pro-v1.42.0-win-x64.exe -Algorithm SHA256
+Get-FileHash .\GameOptimizer-Pro-win-x64.exe -Algorithm SHA256
 ```
 
 ### Build from Source in 0.7 Seconds (Optional)
@@ -148,7 +148,7 @@ Rev 140 (**IRONCLAD KERNEL**) moves hot paths onto zero-exception native Win32 A
 - **Zero `Process.GetProcessById` full-table scans**: Native single-handle affinity read **`2.7 µs`**, cached physical-core mask **`0.0 µs`**, liveness + PID-reuse guard **`2.3 µs`**, private bytes **`2.4 µs`** (vs `~13.8 ms` managed full-table scan).
 - **Active TCP PID aggregation (`net.tcp.pid`)**: Persistent high-water buffer + short-TTL PID name cache **`P50 1.82 ms`** (10.9× faster) + parallel LAN/WAN dual-path probe.
 - **Zero-alloc vector visuals**: `Waveform 41 B/frame`, `MemRibbon 0 B/frame`, `PerfSampler 0 B/tick`, zero `DropShadowEffect` offscreen shadow surfaces.
-- **6 Built-In Verification Suites**: `--selftest` (`117/0`), `--uitest` (`85/0`), `--alloc-test` (`11/0`), `--stress-test` (`8/0`), `--backend-bench` (`fail=0`), `--daemon-test`.
+- **6 Built-In Verification Suites**: `--selftest` (`120/0`), `--uitest` (`85/0`), `--alloc-test` (`11/0`), `--stress-test` (`8/0`), `--backend-bench` (`fail=0`), `--daemon-test`.
 
 ---
 

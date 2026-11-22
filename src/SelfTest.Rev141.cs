@@ -100,6 +100,69 @@ namespace Go
                       && cliOpt.Uninstall && cliOpt.Silent && cliOpt.PurgeUserData,
                       "Rev142 原生自卸载：清理快捷方式与安装目录、默认保留账本、可选清空数据且 --uninstall 参数解析正确",
                       "keepOk=" + (uKeep.Ok && dataPreserved) + " purgeOk=" + (uPurge.Ok && dataPurged));
+
+                // 5) Rev143 更新器离线全链路测试：版本解析 / 域名白名单 / SHA-256 校验与防篡改 / PE 头守卫 / 原子热替换 / 脱敏摘要
+                int r1 = AppUpdater.ParseRevNumber("GameOptimizer Pro (Latest · Rev 148)", "latest", "");
+                int r2 = AppUpdater.ParseRevNumber("", "v1.45.0", "");
+                string fakeJson = "{\"tag_name\":\"latest\",\"name\":\"GameOptimizer Pro (Latest · Rev 148)\",\"html_url\":\"https://github.com/rex25415/GameOptimizer-Pro/releases/tag/latest\",\"assets\":[{\"name\":\"GameOptimizer-Pro-win-x64.exe\",\"browser_download_url\":\"https://github.com/rex25415/GameOptimizer-Pro/releases/download/latest/GameOptimizer-Pro-win-x64.exe\"},{\"name\":\"SHA256SUMS.txt\",\"browser_download_url\":\"https://github.com/rex25415/GameOptimizer-Pro/releases/download/latest/SHA256SUMS.txt\"}]}";
+                AppUpdater.UpdateCheckResult parsedOk = AppUpdater.ParseReleaseJson(fakeJson, 143);
+                AppUpdater.UpdateCheckResult parsedSame = AppUpdater.ParseReleaseJson(fakeJson, 148);
+                string evilJson = "{\"tag_name\":\"latest\",\"name\":\"Rev 199\",\"assets\":[{\"name\":\"GameOptimizer-Pro-win-x64.exe\",\"browser_download_url\":\"https://evil.example.com/payload.exe\"}]}";
+                AppUpdater.UpdateCheckResult parsedEvil = AppUpdater.ParseReleaseJson(evilJson, 143);
+                Check(r1 == 148 && r2 == 145
+                      && parsedOk.Ok && parsedOk.HasUpdate && parsedOk.RemoteRev == 148 && !string.IsNullOrEmpty(parsedOk.Sha256Url)
+                      && parsedSame.Ok && !parsedSame.HasUpdate
+                      && !parsedEvil.Ok,
+                      "Rev143 更新解析与域名守卫：滚动 latest 修订号识别与非官方域名拦截全通过",
+                      "r1=" + r1 + " r2=" + r2 + " hasUpd=" + parsedOk.HasUpdate + " blockEvil=" + (!parsedEvil.Ok));
+
+                // 6) SHA-256 校验、防篡改、PE 头守卫与热替换测试
+                string updDir = Path.Combine(root, "UpdateTest");
+                Directory.CreateDirectory(updDir);
+                string curBin = Path.Combine(updDir, "GameOptimizer.exe");
+                string goodStaged = Path.Combine(updDir, "good.tmp");
+                string badPeStaged = Path.Combine(updDir, "badpe.tmp");
+                byte[] origBytes = new byte[140 * 1024];
+                origBytes[0] = (byte)'M'; origBytes[1] = (byte)'Z'; origBytes[2] = 1;
+                byte[] newBytes = new byte[150 * 1024];
+                newBytes[0] = (byte)'M'; newBytes[1] = (byte)'Z'; newBytes[2] = 2;
+                byte[] notPeBytes = new byte[140 * 1024];
+                notPeBytes[0] = (byte)'N'; notPeBytes[1] = (byte)'O';
+                File.WriteAllBytes(curBin, origBytes);
+                File.WriteAllBytes(goodStaged, newBytes);
+                File.WriteAllBytes(badPeStaged, notPeBytes);
+
+                string goodSha = AppUpdater.ComputeSha256(goodStaged);
+                string sumsText = goodSha + "  GameOptimizer-Pro-win-x64.exe\r\n";
+                string parsedSha = AppUpdater.ParseExpectedSha256(sumsText, "GameOptimizer-Pro-win-x64.exe");
+
+                AppUpdater.UpdateApplyResult badPeRes = AppUpdater.ApplyStagedFile(badPeStaged, curBin, "");
+                AppUpdater.UpdateApplyResult badHashRes = AppUpdater.ApplyStagedFile(goodStaged, curBin, new string('0', 64));
+                AppUpdater.UpdateApplyResult goodRes = AppUpdater.ApplyStagedFile(goodStaged, curBin, parsedSha);
+                byte[] afterBytes = File.ReadAllBytes(curBin);
+                string[] prevBackups = Directory.GetFiles(updDir, "GameOptimizer.exe.prev.*");
+
+                Check(string.Equals(parsedSha, goodSha, StringComparison.OrdinalIgnoreCase)
+                      && !badPeRes.Ok && !badHashRes.Ok
+                      && goodRes.Ok && goodRes.ShaVerified
+                      && afterBytes.Length == newBytes.Length && afterBytes[2] == 2
+                      && prevBackups.Length == 1,
+                      "Rev143 热更新安全闸门：拦截非 PE 文件与哈希不匹配，校验通过后原子热替换成功",
+                      "shaMatch=" + goodRes.ShaVerified + " prev=" + prevBackups.Length);
+
+                // 7) 脱敏环境摘要隐私守卫：绝不包含用户名或本地路径
+                Core sumCore = new Core();
+                sumCore.DetectHardware();
+                string summary = AppUpdater.BuildSanitizedSummary(sumCore);
+                string user = Environment.UserName ?? "";
+                bool noUserLeak = string.IsNullOrEmpty(user) || summary.IndexOf(user, StringComparison.OrdinalIgnoreCase) < 0;
+                bool noPathLeak = summary.IndexOf(":\\", StringComparison.Ordinal) < 0;
+                Check(summary.IndexOf("Rev " + Brand.Rev, StringComparison.Ordinal) >= 0
+                      && summary.IndexOf("OS:", StringComparison.Ordinal) >= 0
+                      && summary.IndexOf("CPU:", StringComparison.Ordinal) >= 0
+                      && noUserLeak && noPathLeak,
+                      "Rev143 脱敏硬件摘要：包含修订号与硬件口径且零用户名/本地路径泄露",
+                      "len=" + summary.Length + " clean=" + (noUserLeak && noPathLeak));
             }
             catch (Exception ex)
             {

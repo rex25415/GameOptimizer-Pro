@@ -1,3 +1,18 @@
+## Rev 143 · 2026-11-22（ROLLING LATEST 滚动单版本闭环：手动检查更新与 SHA-256 热更新 · 安装后自动交接释放下载文件 · 脱敏环境摘要一键复制）
+
+- **GitHub 单一滚动发布（Rolling `latest`）**：
+  - 收敛历史过渡版本为 GitHub 上唯一的滚动最新 Release（标签 `latest`），永久固定文件名 `GameOptimizer-Pro-win-x64.exe` 与 `SHA256SUMS.txt`；永久下载直链永不失效，历史演进保留在 `CHANGELOG.md` 与 Git 提交记录中。
+- **内置手动检查更新与 SHA-256 校验热更新（`src/Kernel/AppUpdater.cs` / `SetupDialog.cs`）**：
+  - 严格坚守「默认零联网」，仅在用户于「应用安装与管理」弹窗主动点击「检查更新」时访问一次 GitHub Releases API；
+  - 发现新版后支持一键下载并热更新：严格限定官方 GitHub 域名白名单，自动核验 PE `MZ` 文件头、合理体积边界与 `SHA256SUMS.txt` 完整 SHA-256 哈希，校验通过后执行 Windows 原子重命名热替换并通过 `--wait-pid` 无缝交接重启；下次启动在后台自动清理 `.prev.*` 旧映像。
+- **安装后自动无缝交接（`AppInstall.LaunchHandoff` / `Shell.BeginHandoffRestart`）**：
+  - 从「下载」或任意临时目录安装至 `%LOCALAPPDATA%\Programs\GameOptimizer\` 后，自动交接重启到安装目录运行，用户可立即删除下载目录中的原 `.exe` 而不会触发文件占用报错。
+- **社区反馈闭环与云端构建模板**：
+  - 弹窗与 `Ctrl+K` 命令面板新增「复制环境摘要」（生成不含用户名、路径与 IP 的脱敏 OS/CPU/GPU/多屏/修订号摘要）与「问题反馈」直达 GitHub Issue 表单；随仓提供 GitHub Actions 官方 Windows 云端编译工作流模板 `docs/workflows/release.yml`。
+- **验收**：零警告编译；`--selftest 120/0`（新增 3 项 Rev 143 滚动更新解析、域名拦截、SHA-256/PE 守卫热替换与脱敏隐私测试）、`--uitest 85/0`、`--alloc-test` 与 `--stress-test` 全通过。
+
+---
+
 ## Rev 142 · 2026-11-21（UNIFIED APP 发布融为一体：唯一单文件 EXE · 快捷方式全由用户勾选决定 · 原生深色内置卸载接管系统设置）
 
 - **彻底融为一体，告别版本分裂与外置脚本**：

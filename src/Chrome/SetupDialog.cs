@@ -38,6 +38,11 @@ namespace Go
         private TextBlock _ledgerNotice;
         private Btn _revertBtn;
         private Btn _uninstallBtn;
+        private TextBlock _updateStatus;
+        private Btn _checkUpdateBtn;
+        private Btn _applyUpdateBtn;
+        private AppUpdater.UpdateCheckResult _pendingUpdate;
+        private bool _updateBusy;
         private TextBlock _feedbackText;
 
         public bool ChangedInstall { get; private set; }
@@ -120,7 +125,9 @@ namespace Go
             if (!_uninstallMode)
             {
                 body.Children.Add(BuildInstallSection());
-                body.Children.Add(Gap(14));
+                body.Children.Add(Gap(12));
+                body.Children.Add(BuildUpdateAndFeedbackSection());
+                body.Children.Add(Gap(12));
                 body.Children.Add(BuildUninstallSection(false));
             }
             else
@@ -294,6 +301,202 @@ namespace Go
             sp.Children.Add(actions);
             card.Child = sp;
             return card;
+        }
+
+        private UIElement BuildUpdateAndFeedbackSection()
+        {
+            Border card = new Border();
+            card.CornerRadius = new CornerRadius(T.RadiusMd);
+            card.Background = T.SubCardBg();
+            card.BorderBrush = T.S(T.LineSoft);
+            card.BorderThickness = new Thickness(1);
+            card.Padding = new Thickness(14, 11, 14, 11);
+
+            StackPanel sp = new StackPanel();
+            Grid top = new Grid();
+            top.ColumnDefinitions.Add(new ColumnDefinition());
+            top.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            StackPanel left = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            TextBlock sec = Ui.Tx("更新与社区反馈", T.FsSmall, T.Hi, T.FCn);
+            sec.FontWeight = FontWeights.SemiBold;
+            left.Children.Add(sec);
+            _updateStatus = Ui.Tx("当前 Rev " + Brand.Rev + " · 默认零联网，仅点击时检查 GitHub 最新版", T.FsNano, T.Mute, T.FCn);
+            _updateStatus.Margin = new Thickness(0, 3, 0, 0);
+            _updateStatus.TextWrapping = TextWrapping.Wrap;
+            left.Children.Add(_updateStatus);
+            top.Children.Add(left);
+
+            StackPanel rightBtns = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            _checkUpdateBtn = new Btn("检查更新", BtnKind.Ghost);
+            _checkUpdateBtn.Height = 28;
+            _checkUpdateBtn.Click += delegate { RunCheckUpdate(); };
+            rightBtns.Children.Add(_checkUpdateBtn);
+
+            _applyUpdateBtn = new Btn("一键热更新", BtnKind.Primary);
+            _applyUpdateBtn.Height = 28;
+            _applyUpdateBtn.Margin = new Thickness(6, 0, 0, 0);
+            _applyUpdateBtn.Visibility = Visibility.Collapsed;
+            _applyUpdateBtn.Click += delegate { RunApplyUpdate(); };
+            rightBtns.Children.Add(_applyUpdateBtn);
+
+            Grid.SetColumn(rightBtns, 1);
+            top.Children.Add(rightBtns);
+            sp.Children.Add(top);
+
+            sp.Children.Add(Gap(9));
+            sp.Children.Add(Ui.Rule(T.LineSoft, 0));
+            sp.Children.Add(Gap(8));
+
+            Grid links = new Grid();
+            links.ColumnDefinitions.Add(new ColumnDefinition());
+            links.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            links.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            TextBlock tip = Ui.Tx("提 Bug 时可先复制脱敏环境摘要（不含用户名/路径/IP）直接粘贴", T.FsNano, T.Mute, T.FCn);
+            tip.VerticalAlignment = VerticalAlignment.Center;
+            tip.TextTrimming = TextTrimming.CharacterEllipsis;
+            links.Children.Add(tip);
+
+            Btn copyBtn = new Btn("复制环境摘要", BtnKind.Quiet);
+            copyBtn.Height = 24;
+            copyBtn.Margin = new Thickness(8, 0, 4, 0);
+            copyBtn.Click += delegate
+            {
+                try
+                {
+                    Clipboard.SetText(AppUpdater.BuildSanitizedSummary(_core));
+                    ShowFeedback("已复制脱敏硬件摘要，可直接粘贴到 GitHub Issue 表单。", true);
+                }
+                catch (Exception ex)
+                {
+                    Diag.Fail("setup.copy_summary", ex);
+                    ShowFeedback("复制剪贴板失败：" + ex.Message, false);
+                }
+            };
+            Grid.SetColumn(copyBtn, 1);
+            links.Children.Add(copyBtn);
+
+            Btn issueBtn = new Btn("问题反馈", BtnKind.Quiet);
+            issueBtn.Height = 24;
+            issueBtn.Click += delegate { AppUpdater.OpenUrl(AppUpdater.IssuesNewUrl); };
+            Grid.SetColumn(issueBtn, 2);
+            links.Children.Add(issueBtn);
+
+            sp.Children.Add(links);
+            card.Child = sp;
+            return card;
+        }
+
+        private void RunCheckUpdate()
+        {
+            if (_updateBusy) return;
+            _updateBusy = true;
+            if (_checkUpdateBtn != null) _checkUpdateBtn.Enabled = false;
+            if (_applyUpdateBtn != null) _applyUpdateBtn.Visibility = Visibility.Collapsed;
+            if (_updateStatus != null)
+            {
+                _updateStatus.Text = "正在连接 GitHub 检查最新版本…";
+                _updateStatus.Foreground = T.S(T.Accent);
+            }
+
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate
+            {
+                AppUpdater.UpdateCheckResult r = AppUpdater.CheckForUpdate();
+                try
+                {
+                    Dispatcher.BeginInvoke(new Action(delegate
+                    {
+                        _updateBusy = false;
+                        if (_checkUpdateBtn != null) _checkUpdateBtn.Enabled = true;
+                        if (!r.Ok)
+                        {
+                            if (_updateStatus != null)
+                            {
+                                _updateStatus.Text = string.IsNullOrEmpty(r.Error) ? "检查更新失败" : r.Error;
+                                _updateStatus.Foreground = T.S(T.Warn);
+                            }
+                            return;
+                        }
+                        if (r.HasUpdate)
+                        {
+                            _pendingUpdate = r;
+                            if (_updateStatus != null)
+                            {
+                                _updateStatus.Text = "发现新版本：Rev " + r.RemoteRev + "（当前 Rev " + r.CurrentRev + "）· 支持 SHA-256 校验热更新";
+                                _updateStatus.Foreground = T.S(T.Ok);
+                            }
+                            if (_applyUpdateBtn != null)
+                            {
+                                _applyUpdateBtn.Label = "热更新至 Rev " + r.RemoteRev;
+                                _applyUpdateBtn.Visibility = Visibility.Visible;
+                            }
+                        }
+                        else
+                        {
+                            _pendingUpdate = null;
+                            if (_updateStatus != null)
+                            {
+                                _updateStatus.Text = "当前已是最新版本（Rev " + r.CurrentRev + " / 远端 Rev " + r.RemoteRev + "）";
+                                _updateStatus.Foreground = T.S(T.Ok);
+                            }
+                        }
+                    }));
+                }
+                catch { }
+            });
+        }
+
+        private void RunApplyUpdate()
+        {
+            if (_updateBusy || _pendingUpdate == null || !_pendingUpdate.HasUpdate) return;
+            _updateBusy = true;
+            if (_checkUpdateBtn != null) _checkUpdateBtn.Enabled = false;
+            if (_applyUpdateBtn != null) { _applyUpdateBtn.Enabled = false; _applyUpdateBtn.Label = "下载中…"; }
+
+            AppUpdater.UpdateCheckResult info = _pendingUpdate;
+            string target = (_status != null && _status.InstalledBinaryExists)
+                ? _status.InstalledExe
+                : AppInstall.CurrentExePath();
+
+            System.Threading.ThreadPool.QueueUserWorkItem(delegate
+            {
+                AppUpdater.UpdateApplyResult res = AppUpdater.DownloadAndApply(info, target, delegate(int pct)
+                {
+                    try
+                    {
+                        Dispatcher.BeginInvoke(new Action(delegate
+                        {
+                            if (_applyUpdateBtn != null) _applyUpdateBtn.Label = "下载 " + pct + "%";
+                        }));
+                    }
+                    catch { }
+                });
+                try
+                {
+                    Dispatcher.BeginInvoke(new Action(delegate
+                    {
+                        _updateBusy = false;
+                        if (_checkUpdateBtn != null) _checkUpdateBtn.Enabled = true;
+                        if (_applyUpdateBtn != null) _applyUpdateBtn.Enabled = true;
+                        if (!res.Ok)
+                        {
+                            if (_applyUpdateBtn != null) _applyUpdateBtn.Label = "重试热更新";
+                            ShowFeedback("更新未完成：" + (string.IsNullOrEmpty(res.Error) ? "请稍后再试" : res.Error), false);
+                            return;
+                        }
+                        ShowFeedback("SHA-256 校验通过并已就位，正在无缝重启进入 Rev " + info.RemoteRev + "…", true);
+                        if (_ownerShell != null && _ownerShell.BeginHandoffRestart(res.TargetExe))
+                        {
+                            Close();
+                            return;
+                        }
+                        if (AppInstall.LaunchHandoff(res.TargetExe, _core != null && _core.Elevated))
+                            Close();
+                    }));
+                }
+                catch { }
+            });
         }
 
         private UIElement BuildUninstallSection(bool prominent)
@@ -470,6 +673,7 @@ namespace Go
 
         private void RunApplyInstall()
         {
+            bool wasInInstallDir = _status != null && _status.RunningFromInstallDir;
             AppInstall.InstallOptions opt = new AppInstall.InstallOptions();
             opt.CreateDesktopShortcut = _chkDesktop;
             opt.CreateStartMenuShortcut = _chkStartMenu;
@@ -485,6 +689,16 @@ namespace Go
 
             ChangedInstall = true;
             _status = AppInstall.Probe();
+
+            // 若当前是从下载/临时目录运行并刚完成安装：无缝交接重启至安装目录的 GameOptimizer.exe，
+            // 这样用户立即删除下载文件夹里的原 .exe 也不会报「文件正在使用」。
+            if (!wasInInstallDir && _ownerShell != null && !string.IsNullOrEmpty(res.InstalledExe)
+                && _ownerShell.BeginHandoffRestart(res.InstalledExe))
+            {
+                Close();
+                return;
+            }
+
             if (_ownerShell != null) _ownerShell.OnInstallStateChanged(res);
             Close();
         }

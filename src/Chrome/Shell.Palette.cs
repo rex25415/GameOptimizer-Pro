@@ -493,6 +493,33 @@ namespace Go
                 "检查写前账本未还原项，清理快捷方式、注册项与安装目录（原生内置）",
                 Glyph.Restore, "SYSTEM", delegate { OpenSetupDialog(true); });
 
+            AddShortcut(r,
+                "检查软件更新（GitHub Latest）",
+                "仅手动触发联网检查，支持 SHA-256 校验与一键热更新",
+                Glyph.Download, "SYSTEM", delegate { OpenSetupDialog(false); });
+
+            AddShortcut(r,
+                "复制脱敏硬件环境摘要（用于提交 Issue）",
+                "复制系统版本/CPU/显卡/多屏/修订号，不含用户名、路径与 IP",
+                Glyph.Log, "ACT", delegate
+                {
+                    try
+                    {
+                        Clipboard.SetText(AppUpdater.BuildSanitizedSummary(_core));
+                        Toast("已复制脱敏硬件摘要，可直接粘贴到 GitHub Issue", true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Diag.Fail("palette.copy_summary", ex);
+                        Toast("复制失败，请稍后重试", false);
+                    }
+                });
+
+            AddShortcut(r,
+                "打开 GitHub 问题反馈与建议",
+                AppUpdater.IssuesNewUrl,
+                Glyph.Network, "SYSTEM", delegate { AppUpdater.OpenUrl(AppUpdater.IssuesNewUrl); });
+
             string openDir = (ist != null && ist.InstalledBinaryExists) ? ist.InstallDir : AppDomain.CurrentDomain.BaseDirectory;
             AddShortcut(r, "打开程序安装目录", openDir, Glyph.Log, "FILE", delegate
             {
